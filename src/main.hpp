@@ -314,11 +314,11 @@ typedef struct string_t {
 	Uint32 color;
 } string_t;
 
-// door structure (used for map generation)
+/*// door structure (used for map generation)
 typedef struct door_t {
 	Sint32 x, y;
 	Sint32 dir; // 0: east, 1: south, 2: west, 3: north
-} door_t;
+} door_t;*/
 
 #define CLIPNEAR 2
 #define CLIPFAR 1024

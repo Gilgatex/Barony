@@ -194,3 +194,13 @@ Entity *Map::getEntityAt(int index) {
 		return NULL;
 	}
 }
+
+void Map::addDoor(Door * door) {
+	this->doors.push_back(door);
+}
+
+Door::Door(Sint32 x, Sint32 y, Sint32 dir) {
+	this->x = x;
+	this->y = y;
+	this->dir = dir;
+}

@@ -20,6 +20,7 @@ class Map {
 		unsigned int width, height;  // size of the map
 		Sint32 *tiles;
 		list<Entity *> entities;
+		list<Door *> doors;
 
 	public:
 		Map();
@@ -33,4 +34,14 @@ class Map {
 		int loadMap(string filename2, list_t* entlist);
 		void addEntity(Entity *);
 		Entity * getEntityAt(int index);
+		void addDoor(Door *);
+};
+
+// Door class (used in map generation)
+class Door {
+	private:
+		Sint32 x, y;
+		Sint32 dir; // 0: east, 1: south, 2: west, 3: north
+	public:
+		Door(Sint32 x, Sint32 y, Sint32 dir);
 };

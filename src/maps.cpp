@@ -166,13 +166,13 @@ int generateDungeon(string levelset, Uint32 seed) {
 	Sint32 numlevels, levelnum, levelnum2;
 	Sint32 x, y, z;
 	Sint32 x0, y0, x1, y1;
-	door_t *door, *newDoor;
-	bool *possiblelocations, *possiblelocations2, *possiblerooms;
+	Door *door, *newDoor;
+	//bool *possiblelocations, *possiblelocations2, *possiblerooms;
 	bool *firstroomtile;
 	Sint32 numpossiblelocations, pickedlocation;
 	Entity *entity, *entity2, *childEntity;
 	Uint32 levellimit;
-	list_t doorList;
+	//list_t doorList;
 	node_t *doorNode;
 	bool shoplevel=FALSE;
 	Map *shopmap;
@@ -219,12 +219,13 @@ int generateDungeon(string levelset, Uint32 seed) {
 			secretlevelexit = 4;
 	}
 	
-	doorList.first=NULL; doorList.last=NULL;
-	
+	//doorList.first=NULL; doorList.last=NULL;
+
 	// load shop room
 	if( shoplevel ) {
+		shopmap = new Map;
 		for( numlevels=0; numlevels<100; numlevels++ ) {
-			stringStream.str("");
+			stringStream.clear();
 			stringStream << "maps/shop" << setw(2) << setfill('0') << numlevels << ".lmp";
 			fullname = stringStream.str();
 			if( access( fullname.c_str(), F_OK ) == -1 )
@@ -232,7 +233,7 @@ int generateDungeon(string levelset, Uint32 seed) {
 		}
 		if( numlevels ) {
 			int shopleveltouse = prng_get_uint() % numlevels;
-			stringStream.str("");
+			stringStream.clear();
 			stringStream << "shop" << setw(2) << setfill('0') << shopleveltouse << ".lmp";
 			sublevelname = stringStream.str();
 			
@@ -246,12 +247,12 @@ int generateDungeon(string levelset, Uint32 seed) {
 	
 	// a maximum of 100 (0-99 inclusive) sublevels can be added to the pool
 	for( numlevels=0; numlevels<100; numlevels++ ) {
-		stringStream.str("");
+		stringStream.clear();
 		stringStream << levelset << setw(2) << setfill('0') << numlevels;
 		sublevelname = stringStream.str();
 		
 		// check if there is another sublevel to load
-		stringStream.str("");
+		stringStream.clear();
 		stringStream << "maps/" << sublevelname << ".lmp";
 		fullname = stringStream.str();
 		if( access( fullname.c_str(), F_OK ) == -1 )
@@ -268,32 +269,29 @@ int generateDungeon(string levelset, Uint32 seed) {
 		mapList.push_back(tempMap);
 
 		// The maps are currently a class, but its elements are not.  I'm not going to touch this yet.
-		newList = (list_t *) malloc(sizeof(list_t));
+/*		newList = (list_t *) malloc(sizeof(list_t));
 		newList->first = NULL; newList->last = NULL;
 		
 		node = list_AddNodeLast(newList);
 		node->element = tempMap;
-		node->deconstructor = &tempMap->~tempMap();
+		node->deconstructor = &tempMap->~tempMap();*/
 		
 		// more nodes are created to record the exit points on the sublevel
-		for( y=0; y<tempMap->height; y++ ) {
-			for( x=0; x<tempMap->width; x++ ) {
-				if( x==0 || y==0 || x==tempMap->width-1 || y==tempMap->height-1 ) {
-					if( !tempMap->tiles[OBSTACLELAYER+y*MAPLAYERS+x*MAPLAYERS*tempMap->height] ) {
-						door = (door_t *) malloc(sizeof(door_t));
-						door->x = x;
-						door->y = y;
-						if( x==tempMap->width-1 )
-							door->dir=0;
-						else if( y==tempMap->height-1 )
-							door->dir=1;
+		for( y=0; y<tempMap->getHeight(); y++ ) {
+			for( x=0; x<tempMap->getWidth(); x++ ) {
+				if( x==0 || y==0 || x==tempMap->getWidth()-1 || y==tempMap->getHeight()-1 ) {
+					if( !tempMap->getTiles()[OBSTACLELAYER+y*MAPLAYERS+x*MAPLAYERS*tempMap->getHeight()] ) {
+						Sint32 dir = 0;
+						if( x==tempMap->getWidth()-1 )
+							dir=0;
+						else if( y==tempMap->getHeight()-1 )
+							dir=1;
 						else if( x==0 )
-							door->dir=2;
+							dir=2;
 						else if( y==0 )
-							door->dir=3;
-						node2 = list_AddNodeLast(newList);
-						node2->element = door;
-						node2->deconstructor = &defaultDeconstructor;
+							dir=3;
+						door = new Door(x, y, dir);
+						tempMap->addDoor(door);
 					}
 				}
 			}
@@ -302,27 +300,27 @@ int generateDungeon(string levelset, Uint32 seed) {
 	
 	// generate dungeon level...
 	int roomcount=0;
+	// Create the bool multidimentional arrays at the right size
+	vector< vector<bool> > possiblelocations(map.getWidth(), vector<bool>(map.getHeight()));
+	vector< vector<bool> > possiblelocations2(map.getWidth(), vector<bool>(map.getHeight()));
+	vector< bool > possiblerooms(map.getWidth()*map.getHeight());
 	if( numlevels > 1 ) {
-		possiblelocations = (bool *) malloc(sizeof(bool)*map.getWidth()*map.getHeight());
 		for( y=0; y<map.getHeight(); y++ ) {
 			for( x=0; x<map.getWidth(); x++ ) {
 				if( x<2 || y<2 || x>map.getWidth()-3 || y>map.getHeight()-3 )
-					possiblelocations[x+y*map.getWidth()] = FALSE;
+					possiblelocations[x][y] = FALSE;
 				else
-					possiblelocations[x+y*map.getWidth()] = TRUE;
+					possiblelocations[x][y] = TRUE;
 			}
 		}
-		possiblelocations2 = (bool *) malloc(sizeof(bool)*map.getWidth()*map.getHeight());
-		firstroomtile = (bool *) malloc(sizeof(bool)*map.getWidth()*map.getHeight());
-		possiblerooms = (bool *) malloc(sizeof(bool)*numlevels);
-		for( c=0; c<numlevels; c++ )
-			possiblerooms[c] = TRUE;
 		levellimit = (map.getWidth()*map.getHeight());
+		for (c=0; c<levellimit; c++ )
+			possiblerooms[c] = TRUE;
 		for( c=0; c<levellimit; c++ ) {
 			// reset array of possible locations for the current room
 			for( y=0; y<map.getHeight(); y++ )
 				for( x=0; x<map.getWidth(); x++ )
-					possiblelocations2[x+y*map.getWidth()] = TRUE;
+					possiblelocations2[x][y] = TRUE;
 			
 			// pick the room to be used
 			if( c==0 ) {
@@ -330,45 +328,43 @@ int generateDungeon(string levelset, Uint32 seed) {
 				levelnum2=0;
 				numlevels--;
 				possiblerooms[0]=FALSE;
-				node = mapList.first;
+				tempMap = mapList.front();
+				mapList.pop_front();
+/*				node = mapList.first;
 				node = ((list_t *)node->element)->first;
 				doorNode = node->next;
-				tempMap = (map_t *)node->element;
+				tempMap = (map_t *)node->element;*/
 			} else if( c==1 && secretlevelexit ) {
-				secretlevelmap.getTiles() = NULL;
-				secretlevelmap.entities = (list_t *) malloc(sizeof(list_t));
-				secretlevelmap.entities->first = NULL; secretlevelmap.entities->last = NULL;
-				char secretmapname[128];
+				secretlevelmap = new Map;
+				string secretmapname;
 				switch( secretlevelexit ) {
 					case 1:
-						strcpy(secretmapname,"minesecret");
+						secretmapname = "minesecret";
 						break;
 					case 2:
-						strcpy(secretmapname,"swampsecret");
+						secretmapname = "swampsecret";
 						break;
 					case 3:
-						strcpy(secretmapname,"labyrinthsecret");
+						secretmapname = "labyrinthsecret";
 						break;
 					case 4:
-						strcpy(secretmapname,"ruinssecret");
+						secretmapname = "ruinssecret";
 						break;
 					default:
 						break;
 				}
-				if( loadMap(secretmapname,&secretlevelmap,secretlevelmap.entities) == -1 ) {
-					list_FreeAll(secretlevelmap.entities);
-					free(secretlevelmap.entities);
-					if( secretlevelmap.getTiles() )
-						free(secretlevelmap.getTiles());
+				if( tempMap->loadMap(secretmapname) == -1 ) {
+					delete(secretlevelmap);
+					continue;
 				}
 				levelnum=0;
 				levelnum2=-1;
-				tempMap = &secretlevelmap;
+				tempMap = secretlevelmap;
 			} else if( c==2 && shoplevel ) {
 				// generate a shop
 				levelnum=0;
 				levelnum2=-1;
-				tempMap = &shopmap;
+				tempMap = shopmap;
 			} else {
 				if( !numlevels ) {
 					break;
@@ -376,7 +372,7 @@ int generateDungeon(string levelset, Uint32 seed) {
 				levelnum=prng_get_uint()%(numlevels); // draw randomly from the pool
 			
 				// traverse the map list to the picked level
-				node = mapList.first;
+				tempMap = mapList.front();
 				i=0; j=-1;
 				while(1) {
 					if(possiblerooms[i]) {

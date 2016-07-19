@@ -55,7 +55,7 @@ int initApp(char *title, int fullscreen) {
 		ttfTextHash[c].last = NULL;
 	}
 	map.entities = NULL;
-	map.tiles = NULL;
+	map.getTiles() = NULL;
 
 	// init steamworks
 	#ifdef STEAMWORKS
@@ -1479,8 +1479,8 @@ int deinitApp() {
 		free(map.entities);
 	}
 	list_FreeAll(&light_l);
-	if( map.tiles != NULL )
-		free(map.tiles);
+	if( map.getTiles() != NULL )
+		free(map.getTiles());
 	if( lightmap != NULL )
 		free(lightmap);
 	if( vismap != NULL )

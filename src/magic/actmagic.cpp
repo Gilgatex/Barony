@@ -112,9 +112,9 @@ void actMagicTrap(Entity *my) {
 				MAGICTRAP_DIRECTION = 0;
 				break;
 		}
-		int u = std::min<int>(std::max(0.0,(my->x+x)/16),map.width-1);
-		int v = std::min<int>(std::max(0.0,(my->y+y)/16),map.height-1);
-		if( !map.tiles[OBSTACLELAYER+v*MAPLAYERS+u*MAPLAYERS*map.height] ) {
+		int u = std::min<int>(std::max(0.0,(my->x+x)/16),map.getWidth()-1);
+		int v = std::min<int>(std::max(0.0,(my->y+y)/16),map.getHeight()-1);
+		if( !map.getTiles()[OBSTACLELAYER+v*MAPLAYERS+u*MAPLAYERS*map.getHeight()] ) {
 			Entity *entity = castSpell(my->uid, getSpellFromID(MAGICTRAP_SPELL), FALSE, TRUE);
 			entity->x = my->x+x;
 			entity->y = my->y+y;
@@ -289,7 +289,7 @@ void actMagiclightBall(Entity *my) {
 		if (lightball_hoverangle > 360) {
 			lightball_hoverangle = 0;
 		}
-		if (map.tiles[(int)((my->y / 16) * MAPLAYERS + (my->x / 16) * MAPLAYERS * map.height)]) {
+		if (map.getTiles()[(int)((my->y / 16) * MAPLAYERS + (my->x / 16) * MAPLAYERS * map.getHeight())]) {
 			//Ceiling.
 			my->z = lightball_hover_basez + ((lightball_hover_basez + LIGHTBALL_HOVER_HIGHPEAK + lightball_hover_basez + LIGHTBALL_HOVER_LOWPEAK) / 2) * sin(lightball_hoverangle * (12.568f / 360.0f)) * 0.1f;
 		} else {
@@ -323,7 +323,7 @@ void actMagiclightBall(Entity *my) {
 					my->vel_y = sin(tangent) * ((distance - MAGICLIGHT_BALL_FOLLOW_DISTANCE) / MAGICLIGHTBALL_DIVIDE_CONSTANT);
 					my->x += (my->vel_x < MAGIC_LIGHTBALL_SPEEDLIMIT) ? my->vel_x : MAGIC_LIGHTBALL_SPEEDLIMIT;
 					my->y += (my->vel_y < MAGIC_LIGHTBALL_SPEEDLIMIT) ? my->vel_y : MAGIC_LIGHTBALL_SPEEDLIMIT;
-				//} else if (!map.tiles[(int)(OBSTACLELAYER + (my->y / 16) * MAPLAYERS + (my->x / 16) * MAPLAYERS * map.height)]) { //If not in wall..
+				//} else if (!map.getTiles()[(int)(OBSTACLELAYER + (my->y / 16) * MAPLAYERS + (my->x / 16) * MAPLAYERS * map.getHeight())]) { //If not in wall..
 				} else {
 					//messagePlayer(0, "******Pathfinding.");
 					//Caster is not in line of sight. Calculate a move path.
@@ -420,7 +420,7 @@ void actMagiclightBall(Entity *my) {
 				list_FreeAll(my->path);
 				my->path = NULL;
 			}
-			if (map.tiles[(int)(OBSTACLELAYER + (my->y / 16) * MAPLAYERS + (my->x / 16) * MAPLAYERS * map.height)]) { //If the ball has come to rest in a wall, move its butt.
+			if (map.getTiles()[(int)(OBSTACLELAYER + (my->y / 16) * MAPLAYERS + (my->x / 16) * MAPLAYERS * map.getHeight())]) { //If the ball has come to rest in a wall, move its butt.
 				double tangent = atan2(parent->y - my->y, parent->x - my->x);
 				my->vel_x = cos(tangent) * ((distance) / MAGICLIGHTBALL_DIVIDE_CONSTANT);
 				my->vel_y = sin(tangent) * ((distance) / MAGICLIGHTBALL_DIVIDE_CONSTANT);
@@ -1426,8 +1426,8 @@ void actMagicMissile(Entity *my) { //TODO: Verify this function.
 					}
 				} else if (!strcmp(element->name, spellElement_dig.name)) {
 					if( !hit.entity ) {
-						if( hit.mapx >= 1 && hit.mapx < map.width-1 && hit.mapy >= 1 && hit.mapy < map.height-1 ) {
-							if( map.tiles[(int)(OBSTACLELAYER+hit.mapy*MAPLAYERS+hit.mapx*MAPLAYERS*map.height)]!=0 ) {
+						if( hit.mapx >= 1 && hit.mapx < map.getWidth()-1 && hit.mapy >= 1 && hit.mapy < map.getHeight()-1 ) {
+							if( map.getTiles()[(int)(OBSTACLELAYER+hit.mapy*MAPLAYERS+hit.mapx*MAPLAYERS*map.getHeight())]!=0 ) {
 								playSoundEntity(my,66,128);
 								playSoundEntity(my,67,128);
 
@@ -1457,7 +1457,7 @@ void actMagicMissile(Entity *my) { //TODO: Verify this function.
 									entity->skill[15] = FALSE;       // identified
 								}
 
-								map.tiles[(int)(OBSTACLELAYER+hit.mapy*MAPLAYERS+hit.mapx*MAPLAYERS*map.height)]=0;
+								map.getTiles()[(int)(OBSTACLELAYER+hit.mapy*MAPLAYERS+hit.mapx*MAPLAYERS*map.getHeight())]=0;
 								// send wall destroy info to clients
 								for( c=1; c<MAXPLAYERS; c++ ) {
 									if( client_disconnected[c]==TRUE )

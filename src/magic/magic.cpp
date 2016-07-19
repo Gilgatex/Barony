@@ -38,11 +38,11 @@ void spell_magicMap(int player) {
 	messagePlayer(player, language[412]);
 	for( y=0; y<64; y++ ) {
 		for( x=0; x<64; x++ ) {
-			if( x<map.width && y<map.height ) {
-				if( map.tiles[OBSTACLELAYER+y*MAPLAYERS+x*MAPLAYERS*map.height] ) {
+			if( x<map.getWidth() && y<map.getHeight() ) {
+				if( map.getTiles()[OBSTACLELAYER+y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] ) {
 					if( !minimap[y][x] )
 						minimap[y][x] = 4;
-				} else if( map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height] ) {
+				} else if( map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] ) {
 					if( !minimap[y][x] )
 						minimap[y][x] = 3;
 				} else {

@@ -138,25 +138,25 @@ Entity *entityClicked() {
 -------------------------------------------------------------------------------*/
 
 bool entityInsideTile(Entity *entity, int x, int y, int z) {
-	if( x<0 || x>=map.width || y<0 || y>=map.height || z<0 || z>=MAPLAYERS )
+	if( x<0 || x>=map.getWidth() || y<0 || y>=map.getHeight() || z<0 || z>=MAPLAYERS )
 		return FALSE;
 	if( entity->x+entity->sizex >= x<<4 ) {
 		if( entity->x-entity->sizex < (x+1)<<4 ) {
 			if( entity->y+entity->sizey >= y<<4 ) {
 				if( entity->y-entity->sizey < (y+1)<<4 ) {
 					if( z==OBSTACLELAYER ) {
-						if( map.tiles[z+y*MAPLAYERS+x*MAPLAYERS*map.height] ) {
+						if( map.getTiles()[z+y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] ) {
 							return TRUE;
 						}
 					} else if( z==0 ) {
-						if( !map.tiles[z+y*MAPLAYERS+x*MAPLAYERS*map.height] ) {
+						if( !map.getTiles()[z+y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] ) {
 							return TRUE;
 						}
 						bool isMonster=FALSE;
 						if( entity )
 							if( entity->behavior==&actMonster )
 								isMonster=TRUE;
-						if( animatedtiles[map.tiles[z+y*MAPLAYERS+x*MAPLAYERS*map.height]] && isMonster ) {
+						if( animatedtiles[map.getTiles()[z+y*MAPLAYERS+x*MAPLAYERS*map.getHeight()]] && isMonster ) {
 							return TRUE;
 						}
 					}
@@ -238,8 +238,8 @@ int barony_clear(double tx, double ty, Entity *my) {
 	for( ty2=ty-my->sizey; ty2<=ty+my->sizey; ty2++ ) {
 		for( tx2=tx-my->sizex; tx2<=tx+my->sizex; tx2++ ) {
 			x = (long)floor(tx2/16); y = (long)floor(ty2/16);
-			if( x>=0 && y>=0 && x<map.width && y<map.height ) {
-				if(map.tiles[OBSTACLELAYER+y*MAPLAYERS+x*MAPLAYERS*map.height]) {
+			if( x>=0 && y>=0 && x<map.getWidth() && y<map.getHeight() ) {
+				if(map.getTiles()[OBSTACLELAYER+y*MAPLAYERS+x*MAPLAYERS*map.getHeight()]) {
 					// hit a wall
 					hit.x = x*16+8;
 					hit.y = y*16+8;
@@ -269,7 +269,7 @@ int barony_clear(double tx, double ty, Entity *my) {
 				if( my )
 					if( my->behavior!=&actPlayer && my->behavior!=&actMonster )
 						levitating=TRUE;
-				if( !levitating && (!map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height] || (animatedtiles[map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height]] && isMonster)) ) {
+				if( !levitating && (!map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] || (animatedtiles[map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()]] && isMonster)) ) {
 					// no floor
 					hit.x = x*16+8;
 					hit.y = y*16+8;
@@ -569,15 +569,15 @@ double lineTrace( Entity *my, double x1, double y1, double angle, double range, 
 	while( d<range ) {
 		if( dval1>dval0 ) { inx+=dincx; d=dval0; dval0+=arx; hit.side=HORIZONTAL; }
 		else { iny+=dincy; d=dval1; dval1+=ary; hit.side=VERTICAL; }
-		if( inx < 0 || iny < 0 || (inx>>4) >= map.width || (iny>>4) >= map.height )
+		if( inx < 0 || iny < 0 || (inx>>4) >= map.getWidth() || (iny>>4) >= map.getHeight() )
 			break;
 		
 		ix = x1 + rx*d;
 		iy = y1 + ry*d;
 		
 		// check against the map
-		int index = (iny>>4)*MAPLAYERS+(inx>>4)*MAPLAYERS*map.height;
-		if( map.tiles[OBSTACLELAYER+index] ) {
+		int index = (iny>>4)*MAPLAYERS+(inx>>4)*MAPLAYERS*map.getHeight();
+		if( map.getTiles()[OBSTACLELAYER+index] ) {
 			hit.x = ix;
 			hit.y = iy;
 			hit.mapx = inx>>4;
@@ -590,7 +590,7 @@ double lineTrace( Entity *my, double x1, double y1, double angle, double range, 
 			if( my )
 				if( my->behavior==&actMonster )
 					isMonster=TRUE;
-			if( !map.tiles[index] || (animatedtiles[map.tiles[index]] && isMonster) ) {
+			if( !map.getTiles()[index] || (animatedtiles[map.getTiles()[index]] && isMonster) ) {
 				hit.x = ix;
 				hit.y = iy;
 				hit.mapx = inx>>4;
@@ -652,15 +652,15 @@ double lineTraceTarget( Entity *my, double x1, double y1, double angle, double r
 	while( d<range ) {
 		if( dval1>dval0 ) { inx+=dincx; d=dval0; dval0+=arx; hit.side=HORIZONTAL; }
 		else { iny+=dincy; d=dval1; dval1+=ary; hit.side=VERTICAL; }
-		if( inx < 0 || iny < 0 || (inx>>4) >= map.width || (iny>>4) >= map.height )
+		if( inx < 0 || iny < 0 || (inx>>4) >= map.getWidth() || (iny>>4) >= map.getHeight() )
 			break;
 		
 		ix = x1 + rx*d;
 		iy = y1 + ry*d;
 		
 		// check against the map
-		int index = (iny>>4)*MAPLAYERS+(inx>>4)*MAPLAYERS*map.height;
-		if( map.tiles[OBSTACLELAYER+index] ) {
+		int index = (iny>>4)*MAPLAYERS+(inx>>4)*MAPLAYERS*map.getHeight();
+		if( map.getTiles()[OBSTACLELAYER+index] ) {
 			hit.x = ix;
 			hit.y = iy;
 			hit.mapx = inx>>4;
@@ -673,7 +673,7 @@ double lineTraceTarget( Entity *my, double x1, double y1, double angle, double r
 			if( my )
 				if( my->behavior==&actMonster )
 					isMonster=TRUE;
-			if( !map.tiles[index] || (animatedtiles[map.tiles[index]] && isMonster) ) {
+			if( !map.getTiles()[index] || (animatedtiles[map.getTiles()[index]] && isMonster) ) {
 				hit.x = ix;
 				hit.y = iy;
 				hit.mapx = inx>>4;
@@ -744,8 +744,8 @@ int checkObstacle(long x, long y, Entity *my, Entity *target) {
 	}
 
 	// collision detection
-	if( x>=0 && x<map.width<<4 ) {
-		if( y>=0 && y<map.height<<4 ) {
+	if( x>=0 && x<map.getWidth()<<4 ) {
+		if( y>=0 && y<map.getHeight()<<4 ) {
 			for( node=map.entities->first; node!=NULL; node=node->next ) {
 				entity = (Entity *)node->element;
 				if( entity->flags[PASSABLE] || entity==my || entity==target || entity->behavior==&actDoor )
@@ -756,8 +756,8 @@ int checkObstacle(long x, long y, Entity *my, Entity *target) {
 					}
 				}
 			}
-			int index = (y>>4)*MAPLAYERS+(x>>4)*MAPLAYERS*map.height;
-			if(map.tiles[OBSTACLELAYER+index]) // wall
+			int index = (y>>4)*MAPLAYERS+(x>>4)*MAPLAYERS*map.getHeight();
+			if(map.getTiles()[OBSTACLELAYER+index]) // wall
 				return 1;
 			bool isMonster=FALSE;
 			if( my ) {
@@ -765,7 +765,7 @@ int checkObstacle(long x, long y, Entity *my, Entity *target) {
 					isMonster=TRUE;
 				}
 			}
-			if( !levitating && (!map.tiles[index] || (animatedtiles[map.tiles[index]] && isMonster)) ) // no floor
+			if( !levitating && (!map.getTiles()[index] || (animatedtiles[map.getTiles()[index]] && isMonster)) ) // no floor
 				return 1;
 		}
 	}

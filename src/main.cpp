@@ -12,6 +12,7 @@
 #include "main.hpp"
 #include "hash.hpp"
 #include "entity.hpp"
+#include "map.hpp";
 
 // main definitions
 Sint32 xres = 960;
@@ -103,7 +104,7 @@ Sint32 ocamx=0, ocamy=0;
 Sint32 newcamx, newcamy;
 Uint32 entity_uids=1, lastEntityUIDs=1;
 view_t camera;
-map_t map;
+Map map;
 voxel_t **models = NULL;
 list_t button_l;
 list_t light_l;

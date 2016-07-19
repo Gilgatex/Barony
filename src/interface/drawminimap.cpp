@@ -42,8 +42,8 @@ void drawMinimap() {
 	glOrtho(0, xres, 0, yres, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
 	glBindTexture(GL_TEXTURE_2D,0);
-	for( x=0; x<map.width; x++ ) {
-		for( y=0; y<map.height; y++ ) {
+	for( x=0; x<map.getWidth(); x++ ) {
+		for( y=0; y<map.getHeight(); y++ ) {
 			if( minimap[y][x]==0 )
 				glColor4f( 32/255.f,  12/255.f, 0/255.f, 1 );
 			else if( minimap[y][x]==1 )
@@ -55,10 +55,10 @@ void drawMinimap() {
 			else if( minimap[y][x]==4 )
 				glColor4f( 64/255.f, 64/255.f, 64/255.f, 1 );
 			glBegin(GL_QUADS);
-				glVertex2f(x*MINIMAPSCALE+xres-map.width*MINIMAPSCALE, map.height*MINIMAPSCALE-y*MINIMAPSCALE-MINIMAPSCALE);
-				glVertex2f(x*MINIMAPSCALE+xres-map.width*MINIMAPSCALE+MINIMAPSCALE, map.height*MINIMAPSCALE-y*MINIMAPSCALE-MINIMAPSCALE);
-				glVertex2f(x*MINIMAPSCALE+xres-map.width*MINIMAPSCALE+MINIMAPSCALE, map.height*MINIMAPSCALE-y*MINIMAPSCALE);
-				glVertex2f(x*MINIMAPSCALE+xres-map.width*MINIMAPSCALE, map.height*MINIMAPSCALE-y*MINIMAPSCALE);
+				glVertex2f(x*MINIMAPSCALE+xres-map.getWidth()*MINIMAPSCALE, map.getHeight()*MINIMAPSCALE-y*MINIMAPSCALE-MINIMAPSCALE);
+				glVertex2f(x*MINIMAPSCALE+xres-map.getWidth()*MINIMAPSCALE+MINIMAPSCALE, map.getHeight()*MINIMAPSCALE-y*MINIMAPSCALE-MINIMAPSCALE);
+				glVertex2f(x*MINIMAPSCALE+xres-map.getWidth()*MINIMAPSCALE+MINIMAPSCALE, map.getHeight()*MINIMAPSCALE-y*MINIMAPSCALE);
+				glVertex2f(x*MINIMAPSCALE+xres-map.getWidth()*MINIMAPSCALE, map.getHeight()*MINIMAPSCALE-y*MINIMAPSCALE);
 			glEnd();
 		}
 	}
@@ -75,7 +75,7 @@ void drawMinimap() {
 	for( node=map.entities->first; node!=NULL; node=node->next ) {
 		Entity *entity = (Entity *)node->element;
 		if( entity->sprite == 161 || (entity->sprite >= 254 && entity->sprite < 258) ) { // ladder or portal models
-			if( entity->x >= 0 && entity->y >= 0 && entity->x < map.width<<4 && entity->y < map.height<<4 ) {
+			if( entity->x >= 0 && entity->y >= 0 && entity->x < map.getWidth()<<4 && entity->y < map.getHeight()<<4 ) {
 				x = floor(entity->x/16);
 				y = floor(entity->y/16);
 				if( minimap[y][x] ) {
@@ -85,10 +85,10 @@ void drawMinimap() {
 						else
 							glColor4f( 0, 1, 1, 1 );
 						glBegin(GL_QUADS);
-							glVertex2f(x*MINIMAPSCALE+xres-map.width*MINIMAPSCALE, map.height*MINIMAPSCALE-y*MINIMAPSCALE-MINIMAPSCALE);
-							glVertex2f(x*MINIMAPSCALE+xres-map.width*MINIMAPSCALE+MINIMAPSCALE, map.height*MINIMAPSCALE-y*MINIMAPSCALE-MINIMAPSCALE);
-							glVertex2f(x*MINIMAPSCALE+xres-map.width*MINIMAPSCALE+MINIMAPSCALE, map.height*MINIMAPSCALE-y*MINIMAPSCALE);
-							glVertex2f(x*MINIMAPSCALE+xres-map.width*MINIMAPSCALE, map.height*MINIMAPSCALE-y*MINIMAPSCALE);
+							glVertex2f(x*MINIMAPSCALE+xres-map.getWidth()*MINIMAPSCALE, map.getHeight()*MINIMAPSCALE-y*MINIMAPSCALE-MINIMAPSCALE);
+							glVertex2f(x*MINIMAPSCALE+xres-map.getWidth()*MINIMAPSCALE+MINIMAPSCALE, map.getHeight()*MINIMAPSCALE-y*MINIMAPSCALE-MINIMAPSCALE);
+							glVertex2f(x*MINIMAPSCALE+xres-map.getWidth()*MINIMAPSCALE+MINIMAPSCALE, map.getHeight()*MINIMAPSCALE-y*MINIMAPSCALE);
+							glVertex2f(x*MINIMAPSCALE+xres-map.getWidth()*MINIMAPSCALE, map.getHeight()*MINIMAPSCALE-y*MINIMAPSCALE);
 						glEnd();
 					}
 				}
@@ -101,23 +101,23 @@ void drawMinimap() {
 						y = floor(entity->y/16);
 						glColor4f( .5, .25, .5, 1 );
 						glBegin(GL_QUADS);
-							glVertex2f(x*MINIMAPSCALE+xres-map.width*MINIMAPSCALE, map.height*MINIMAPSCALE-y*MINIMAPSCALE-MINIMAPSCALE);
-							glVertex2f(x*MINIMAPSCALE+xres-map.width*MINIMAPSCALE+MINIMAPSCALE, map.height*MINIMAPSCALE-y*MINIMAPSCALE-MINIMAPSCALE);
-							glVertex2f(x*MINIMAPSCALE+xres-map.width*MINIMAPSCALE+MINIMAPSCALE, map.height*MINIMAPSCALE-y*MINIMAPSCALE);
-							glVertex2f(x*MINIMAPSCALE+xres-map.width*MINIMAPSCALE, map.height*MINIMAPSCALE-y*MINIMAPSCALE);
+							glVertex2f(x*MINIMAPSCALE+xres-map.getWidth()*MINIMAPSCALE, map.getHeight()*MINIMAPSCALE-y*MINIMAPSCALE-MINIMAPSCALE);
+							glVertex2f(x*MINIMAPSCALE+xres-map.getWidth()*MINIMAPSCALE+MINIMAPSCALE, map.getHeight()*MINIMAPSCALE-y*MINIMAPSCALE-MINIMAPSCALE);
+							glVertex2f(x*MINIMAPSCALE+xres-map.getWidth()*MINIMAPSCALE+MINIMAPSCALE, map.getHeight()*MINIMAPSCALE-y*MINIMAPSCALE);
+							glVertex2f(x*MINIMAPSCALE+xres-map.getWidth()*MINIMAPSCALE, map.getHeight()*MINIMAPSCALE-y*MINIMAPSCALE);
 						glEnd();
 					}
 				}
 			} else if( entity->sprite == 245 ) { // boulder.vox
-				x = std::min<int>(std::max(0.0,entity->x/16),map.width-1);
-				y = std::min<int>(std::max(0.0,entity->y/16),map.height-1);
+				x = std::min<int>(std::max(0.0,entity->x/16),map.getWidth()-1);
+				y = std::min<int>(std::max(0.0,entity->y/16),map.getHeight()-1);
 				if( minimap[y][x]==1 || minimap[y][x]==2 ) {
 					glColor4f( 192/255.f, 64/255.f, 0/255.f, 1 );
 					glBegin(GL_QUADS);
-						glVertex2f(x*MINIMAPSCALE+xres-map.width*MINIMAPSCALE, map.height*MINIMAPSCALE-y*MINIMAPSCALE-MINIMAPSCALE);
-						glVertex2f(x*MINIMAPSCALE+xres-map.width*MINIMAPSCALE+MINIMAPSCALE, map.height*MINIMAPSCALE-y*MINIMAPSCALE-MINIMAPSCALE);
-						glVertex2f(x*MINIMAPSCALE+xres-map.width*MINIMAPSCALE+MINIMAPSCALE, map.height*MINIMAPSCALE-y*MINIMAPSCALE);
-						glVertex2f(x*MINIMAPSCALE+xres-map.width*MINIMAPSCALE, map.height*MINIMAPSCALE-y*MINIMAPSCALE);
+						glVertex2f(x*MINIMAPSCALE+xres-map.getWidth()*MINIMAPSCALE, map.getHeight()*MINIMAPSCALE-y*MINIMAPSCALE-MINIMAPSCALE);
+						glVertex2f(x*MINIMAPSCALE+xres-map.getWidth()*MINIMAPSCALE+MINIMAPSCALE, map.getHeight()*MINIMAPSCALE-y*MINIMAPSCALE-MINIMAPSCALE);
+						glVertex2f(x*MINIMAPSCALE+xres-map.getWidth()*MINIMAPSCALE+MINIMAPSCALE, map.getHeight()*MINIMAPSCALE-y*MINIMAPSCALE);
+						glVertex2f(x*MINIMAPSCALE+xres-map.getWidth()*MINIMAPSCALE, map.getHeight()*MINIMAPSCALE-y*MINIMAPSCALE);
 					glEnd();
 				}
 			}
@@ -151,8 +151,8 @@ void drawMinimap() {
 			}
 			
 			// draw the first pixel
-			x = xres-map.width*MINIMAPSCALE+(int)(entity->x/(16.f/MINIMAPSCALE));
-			y = map.height*MINIMAPSCALE-(int)(entity->y/(16.f/MINIMAPSCALE));
+			x = xres-map.getWidth()*MINIMAPSCALE+(int)(entity->x/(16.f/MINIMAPSCALE));
+			y = map.getHeight()*MINIMAPSCALE-(int)(entity->y/(16.f/MINIMAPSCALE));
 			if( softwaremode ) {
 				//SPG_Pixel(screen,(int)(players[c]->x/16)+564+x+xres/2-(status_bmp->w/2),(int)(players[c]->y/16)+yres-71+y,color);
 			} else {
@@ -191,7 +191,7 @@ void drawMinimap() {
 				} else {
 					glColor4f(((Uint8)(color>>mainsurface->format->Rshift))/255.f,((Uint8)(color>>mainsurface->format->Gshift))/255.f,((Uint8)(color>>mainsurface->format->Bshift))/255.f,1);
 					glBegin(GL_POINTS);
-						glVertex2f( xres-map.width*MINIMAPSCALE+(int)(entity->x/(16.f/MINIMAPSCALE))+x, map.height*MINIMAPSCALE-(int)(entity->y/(16.f/MINIMAPSCALE))-y );
+						glVertex2f( xres-map.getWidth()*MINIMAPSCALE+(int)(entity->x/(16.f/MINIMAPSCALE))+x, map.getHeight()*MINIMAPSCALE-(int)(entity->y/(16.f/MINIMAPSCALE))-y );
 					glEnd();
 				}
 			}
@@ -214,8 +214,8 @@ void drawMinimap() {
 					color = SDL_MapRGB(mainsurface->format,0,192,192);
 			
 				// draw the first pixel
-				x = xres-map.width*MINIMAPSCALE+(int)(entity->x/(16.f/MINIMAPSCALE));
-				y = map.height*MINIMAPSCALE-(int)(entity->y/(16.f/MINIMAPSCALE));
+				x = xres-map.getWidth()*MINIMAPSCALE+(int)(entity->x/(16.f/MINIMAPSCALE));
+				y = map.getHeight()*MINIMAPSCALE-(int)(entity->y/(16.f/MINIMAPSCALE));
 				if( softwaremode ) {
 					//SPG_Pixel(screen,(int)(players[c]->x/16)+564+x+xres/2-(status_bmp->w/2),(int)(players[c]->y/16)+yres-71+y,color);
 				} else {
@@ -253,7 +253,7 @@ void drawMinimap() {
 					} else {
 						glColor4f(((Uint8)(color>>16))/255.f,((Uint8)(color>>8))/255.f,((Uint8)(color))/255.f,1);
 						glBegin(GL_POINTS);
-							glVertex2f( xres-map.width*MINIMAPSCALE+(int)(entity->x/(16.f/MINIMAPSCALE))+x, map.height*MINIMAPSCALE-(int)(entity->y/(16.f/MINIMAPSCALE))-y );
+							glVertex2f( xres-map.getWidth()*MINIMAPSCALE+(int)(entity->x/(16.f/MINIMAPSCALE))+x, map.getHeight()*MINIMAPSCALE-(int)(entity->y/(16.f/MINIMAPSCALE))-y );
 						glEnd();
 					}
 				}

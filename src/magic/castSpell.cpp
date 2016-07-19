@@ -237,9 +237,9 @@ Entity* castSpell(Uint32 caster_uid, spell_t *spell, bool using_magicstaff, bool
 	if (!waterwalkingboots && !levitating && !trap && player>=0) {
 		bool swimming=FALSE;
 		if( players[player] ) {
-			int x = std::min<int>(std::max(0.0,floor(caster->x/16)),map.width-1);
-			int y = std::min<int>(std::max(0.0,floor(caster->y/16)),map.height-1);
-			if( animatedtiles[map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height]] )
+			int x = std::min<int>(std::max(0.0,floor(caster->x/16)),map.getWidth()-1);
+			int y = std::min<int>(std::max(0.0,floor(caster->y/16)),map.getHeight()-1);
+			if( animatedtiles[map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()]] )
 				swimming=TRUE;
 		}
 		if( swimming ) {

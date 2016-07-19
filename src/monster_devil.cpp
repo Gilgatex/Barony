@@ -233,10 +233,10 @@ void devilDie(Entity *my) {
 		}
 	}
 	int x, y;
-	for( y=map.height/2-1; y<map.height/2+2; y++ ) {
-		for( x=3; x<map.width/2; x++ ) {
-			if( !map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height] )
-				map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height] = 72;
+	for( y=map.getHeight()/2-1; y<map.getHeight()/2+2; y++ ) {
+		for( x=3; x<map.getWidth()/2; x++ ) {
+			if( !map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] )
+				map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] = 72;
 		}
 	}
 	for( node=map.entities->first; node!=NULL; node=node->next ) {

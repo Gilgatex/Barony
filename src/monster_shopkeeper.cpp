@@ -58,7 +58,7 @@ void initShopkeeper(Entity *my, Stat *myStats) {
 			else
 				break;
 		}
-		for( x=my->x; x<map.width<<4; x+=16 ) {
+		for( x=my->x; x<map.getWidth()<<4; x+=16 ) {
 			if( !checkObstacle(x,my->y,my,NULL) )
 				MONSTER_SHOPXE = x;
 			else
@@ -70,7 +70,7 @@ void initShopkeeper(Entity *my, Stat *myStats) {
 			else
 				break;
 		}
-		for( y=my->y; y<map.height<<4; y+=16 ) {
+		for( y=my->y; y<map.getHeight()<<4; y+=16 ) {
 			if( !checkObstacle(my->x,y,my,NULL) )
 				MONSTER_SHOPYE = y;
 			else
@@ -78,8 +78,8 @@ void initShopkeeper(Entity *my, Stat *myStats) {
 		}
 		for( x=MONSTER_SHOPXS-16; x<=MONSTER_SHOPXE+16; x+=16 ) {
 			for( y=MONSTER_SHOPYS-16; y<=MONSTER_SHOPYE+16; y+=16 ) {
-				if( x/16>=0 && x/16<map.width && y/16>=0 && y/16<map.height )
-					shoparea[y/16+(x/16)*map.height] = TRUE;
+				if( x/16>=0 && x/16<map.getWidth() && y/16>=0 && y/16<map.getHeight() )
+					shoparea[y/16+(x/16)*map.getHeight()] = TRUE;
 			}
 		}
 
@@ -347,9 +347,9 @@ void shopkeeperDie(Entity *my) {
 	}
 	if (spawn_blood) {
 		int x, y;
-		x = std::min<unsigned int>(std::max<int>(0,my->x/16),map.width-1);
-		y = std::min<unsigned int>(std::max<int>(0,my->y/16),map.height-1);
-		if( map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height] ) {
+		x = std::min<unsigned int>(std::max<int>(0,my->x/16),map.getWidth()-1);
+		y = std::min<unsigned int>(std::max<int>(0,my->y/16),map.getHeight()-1);
+		if( map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] ) {
 			if( !checkObstacle(my->x,my->y,my,NULL) ) {
 				Entity *entity = newEntity(160,1,map.entities);
 				entity->x = my->x;

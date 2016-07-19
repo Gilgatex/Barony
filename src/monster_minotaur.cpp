@@ -249,9 +249,9 @@ void minotaurDie(Entity *my) {
 	}
 	if (spawn_blood) {
 		int x, y;
-		x = std::min<unsigned int>(std::max<int>(0,my->x/16),map.width-1);
-		y = std::min<unsigned int>(std::max<int>(0,my->y/16),map.height-1);
-		if( map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height] ) {
+		x = std::min<unsigned int>(std::max<int>(0,my->x/16),map.getWidth()-1);
+		y = std::min<unsigned int>(std::max<int>(0,my->y/16),map.getHeight()-1);
+		if( map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] ) {
 			if( !checkObstacle(my->x,my->y,my,NULL) ) {
 				Entity *entity = newEntity(160,1,map.entities);
 				entity->x = my->x;
@@ -621,9 +621,9 @@ void actMinotaurCeilingBuster(Entity *my) {
 	double x, y;
 
 	// levitate particles
-	int u = std::min<unsigned int>(std::max<int>(0,my->x/16),map.width-1);
-	int v = std::min<unsigned int>(std::max<int>(0,my->y/16),map.height-1);
-	if( !map.tiles[v*MAPLAYERS+u*MAPLAYERS*map.height] ) {
+	int u = std::min<unsigned int>(std::max<int>(0,my->x/16),map.getWidth()-1);
+	int v = std::min<unsigned int>(std::max<int>(0,my->y/16),map.getHeight()-1);
+	if( !map.getTiles()[v*MAPLAYERS+u*MAPLAYERS*map.getHeight()] ) {
 		int c;
 		for( c=0; c<2; c++ ) {
 			Entity *entity = newEntity(171,1,map.entities);
@@ -650,10 +650,10 @@ void actMinotaurCeilingBuster(Entity *my) {
 	// bust ceilings
 	for( x=my->x-my->sizex-1; x<=my->x+my->sizex+1; x+=1 ) {
 		for( y=my->y-my->sizey-1; y<=my->y+my->sizey+1; y+=1 ) {
-			if( x>=0 && y>=0 && x<map.width<<4 && y<map.height<<4 ) {
-				int index = (MAPLAYERS-1)+((int)floor(y/16))*MAPLAYERS+((int)floor(x/16))*MAPLAYERS*map.height;
-				if( map.tiles[index] ) {
-					map.tiles[index] = 0;
+			if( x>=0 && y>=0 && x<map.getWidth()<<4 && y<map.getHeight()<<4 ) {
+				int index = (MAPLAYERS-1)+((int)floor(y/16))*MAPLAYERS+((int)floor(x/16))*MAPLAYERS*map.getHeight();
+				if( map.getTiles()[index] ) {
+					map.getTiles()[index] = 0;
 					if( multiplayer != CLIENT ) {
 						playSoundEntity(my, 67, 128);
 						MONSTER_ATTACK=1;

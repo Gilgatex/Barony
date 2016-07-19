@@ -759,7 +759,7 @@ void drawClearBuffers() {
 		memset( clickmap, 0, xres*yres*sizeof(Entity *) );
 	}
 	if( vismap != NULL ) {
-		int c, i = map.width*map.height;
+		int c, i = map.getWidth()*map.getHeight();
 		for( c=0; c<i; c++ )
 			vismap[c] = FALSE;
 	}
@@ -803,8 +803,8 @@ void raycast(view_t *camera, int mode) {
 	rx = cos(camera->ang - wfov/2.f);
 	ry = sin(camera->ang - wfov/2.f);
 
-	if( posx>=0 && posy>=0 && posx<map.width && posy<map.height )
-		vismap[posy+posx*map.height]=TRUE;
+	if( posx>=0 && posy>=0 && posx<map.getWidth() && posy<map.getHeight() )
+		vismap[posy+posx*map.getHeight()]=TRUE;
 	for( sx=0; sx<camera->winw; sx++ ) { // for every column of the screen
 		inx=posx; iny=posy;
 		inx2=inx; iny2=iny;
@@ -849,18 +849,18 @@ void raycast(view_t *camera, int mode) {
 				dval1+=ary;
 			}
 			
-			if( inx>=0 && iny>=0 && inx<map.width && iny<map.height ) {
-				vismap[iny+inx*map.height]=TRUE;
+			if( inx>=0 && iny>=0 && inx<map.getWidth() && iny<map.getHeight() ) {
+				vismap[iny+inx*map.getHeight()]=TRUE;
 				for( z=0; z<MAPLAYERS; z++ ) {
 					zhit[z]=FALSE;
-					if( map.tiles[z+iny*MAPLAYERS+inx*MAPLAYERS*map.height] && d>dstart ) { // hit something solid
+					if( map.getTiles()[z+iny*MAPLAYERS+inx*MAPLAYERS*map.getHeight()] && d>dstart ) { // hit something solid
 						zhit[z]=TRUE;
 						
 						// collect light information
-						if( inx2>=0 && iny2>=0 && inx2<map.width && iny2<map.height ) {
-							if( map.tiles[z+iny2*MAPLAYERS+inx2*MAPLAYERS*map.height] )
+						if( inx2>=0 && iny2>=0 && inx2<map.getWidth() && iny2<map.getHeight() ) {
+							if( map.getTiles()[z+iny2*MAPLAYERS+inx2*MAPLAYERS*map.getHeight()] )
 								continue;
-							light = std::min(std::max(0,lightmap[iny2+inx2*map.height]),255);
+							light = std::min(std::max(0,lightmap[iny2+inx2*map.getHeight()]),255);
 						} else {
 							light = 128;
 						}
@@ -872,14 +872,14 @@ void raycast(view_t *camera, int mode) {
 									minimap[iny][inx]=2; // wall space
 					} else if( z==OBSTACLELAYER && mode==REALCOLORS ) {
 						// update minimap to show empty region
-						if( inx>=0 && iny>=0 && inx<map.width && iny<map.height )
-							light = std::min(std::max(0,lightmap[iny+inx*map.height]),255);
+						if( inx>=0 && iny>=0 && inx<map.getWidth() && iny<map.getHeight() )
+							light = std::min(std::max(0,lightmap[iny+inx*map.getHeight()]),255);
 						else
 							light = 128;
 						if( d<16 ) {
-							if( light>0 && map.tiles[iny*MAPLAYERS+inx*MAPLAYERS*map.height] )
+							if( light>0 && map.getTiles()[iny*MAPLAYERS+inx*MAPLAYERS*map.getHeight()] )
 								minimap[iny][inx]=1; // walkable space
-							else if( map.tiles[z+iny*MAPLAYERS+inx*MAPLAYERS*map.height] )
+							else if( map.getTiles()[z+iny*MAPLAYERS+inx*MAPLAYERS*map.getHeight()] )
 								minimap[iny][inx]=0; // no floor
 						}
 					}
@@ -929,8 +929,8 @@ void drawEntities3D(view_t *camera, int mode) {
 		}
 		x = entity->x/16;
 		y = entity->y/16;
-		if( x>=0 && y>=0 && x<map.width && y<map.height ) {
-			if( vismap[y+x*map.height] || entity->flags[OVERDRAW] ) {
+		if( x>=0 && y>=0 && x<map.getWidth() && y<map.getHeight() ) {
+			if( vismap[y+x*map.getHeight()] || entity->flags[OVERDRAW] ) {
 				if( entity->flags[SPRITE] == FALSE ) {
 					glDrawVoxel(camera,entity,mode);
 				} else {
@@ -1023,10 +1023,10 @@ void drawGrid(long camx, long camy) {
 	Uint32 color;
 	
 	color = SDL_MapRGB(mainsurface->format,127,127,127);
-	drawLine(-camx,(map.height<<TEXTUREPOWER)-camy,(map.width<<TEXTUREPOWER)-camx,(map.height<<TEXTUREPOWER)-camy,color,255);
-	drawLine((map.width<<TEXTUREPOWER)-camx,-camy,(map.width<<TEXTUREPOWER)-camx,(map.height<<TEXTUREPOWER)-camy,color,255);
-	for( y=0; y<map.height; y++ ) {
-		for( x=0; x<map.width; x++ ) {
+	drawLine(-camx,(map.getHeight()<<TEXTUREPOWER)-camy,(map.getWidth()<<TEXTUREPOWER)-camx,(map.getHeight()<<TEXTUREPOWER)-camy,color,255);
+	drawLine((map.getWidth()<<TEXTUREPOWER)-camx,-camy,(map.getWidth()<<TEXTUREPOWER)-camx,(map.getHeight()<<TEXTUREPOWER)-camy,color,255);
+	for( y=0; y<map.getHeight(); y++ ) {
+		for( x=0; x<map.getWidth(); x++ ) {
 			drawLine((x<<TEXTUREPOWER)-camx,(y<<TEXTUREPOWER)-camy,((x+1)<<TEXTUREPOWER)-camx,(y<<TEXTUREPOWER)-camy,color,255);
 			drawLine((x<<TEXTUREPOWER)-camx,(y<<TEXTUREPOWER)-camy,(x<<TEXTUREPOWER)-camx,((y+1)<<TEXTUREPOWER)-camy,color,255);
 		}
@@ -1052,10 +1052,10 @@ void drawEditormap(long camx, long camy) {
 	drawRect(&src,SDL_MapRGB(mainsurface->format,0,0,0),255);
 	
 	// initial box dimensions
-	src.x = (xres-120) + (((double)camx/TEXTURESIZE)*112.0)/map.width;
-	src.y = 24 + (((double)camy/TEXTURESIZE)*112.0)/map.height;
-	src.w = (112.0/map.width)*((double)xres/TEXTURESIZE);
-	src.h = (112.0/map.height)*((double)yres/TEXTURESIZE);
+	src.x = (xres-120) + (((double)camx/TEXTURESIZE)*112.0)/map.getWidth();
+	src.y = 24 + (((double)camy/TEXTURESIZE)*112.0)/map.getHeight();
+	src.w = (112.0/map.getWidth())*((double)xres/TEXTURESIZE);
+	src.h = (112.0/map.getHeight())*((double)yres/TEXTURESIZE);
 	
 	// clip at left edge
 	if( src.x < xres-120 ) {

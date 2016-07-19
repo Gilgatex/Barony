@@ -39,7 +39,7 @@ light_t *lightSphereShadow(Sint32 x, Sint32 y, Sint32 radius, Sint32 intensity) 
 	
 	for( v=y-radius; v<=y+radius; v++ ) {
 		for( u=x-radius; u<=x+radius; u++ ) {
-			if( u>=0 && v>=0 && u<map.width && v<map.height ) {
+			if( u>=0 && v>=0 && u<map.getWidth() && v<map.getHeight() ) {
 				dx = u-x;
 				dy = v-y;
 				dxabs=abs(dx);
@@ -48,9 +48,9 @@ light_t *lightSphereShadow(Sint32 x, Sint32 y, Sint32 radius, Sint32 intensity) 
 				b=dxabs*.5;
 				u2=u; v2=v;
 				wallhit=TRUE;
-				index = v*MAPLAYERS+u*MAPLAYERS*map.height;
+				index = v*MAPLAYERS+u*MAPLAYERS*map.getHeight();
 				for( z=0; z<MAPLAYERS; z++ ) {
-					if( !map.tiles[index+z] ) {
+					if( !map.getTiles()[index+z] ) {
 						wallhit=FALSE;
 						break;
 					}
@@ -65,8 +65,8 @@ light_t *lightSphereShadow(Sint32 x, Sint32 y, Sint32 radius, Sint32 intensity) 
 							b -= dxabs;
 							v2 -= sgn(dy);
 						}
-						if( u2>=0 && u2<map.width && v2>=0 && v2<map.height ) {
-							if( map.tiles[OBSTACLELAYER+v2*MAPLAYERS+u2*MAPLAYERS*map.height] ) {
+						if( u2>=0 && u2<map.getWidth() && v2>=0 && v2<map.getHeight() ) {
+							if( map.getTiles()[OBSTACLELAYER+v2*MAPLAYERS+u2*MAPLAYERS*map.getHeight()] ) {
 								wallhit=TRUE;
 								break;
 							}
@@ -80,8 +80,8 @@ light_t *lightSphereShadow(Sint32 x, Sint32 y, Sint32 radius, Sint32 intensity) 
 							a -= dyabs;
 							u2 -= sgn(dx);
 						}
-						if( u2>=0 && u2<map.width && v2>=0 && v2<map.height ) {
-							if( map.tiles[OBSTACLELAYER+v2*MAPLAYERS+u2*MAPLAYERS*map.height] ) {
+						if( u2>=0 && u2<map.getWidth() && v2>=0 && v2<map.getHeight() ) {
+							if( map.getTiles()[OBSTACLELAYER+v2*MAPLAYERS+u2*MAPLAYERS*map.getHeight()] ) {
 								wallhit=TRUE;
 								break;
 							}
@@ -90,7 +90,7 @@ light_t *lightSphereShadow(Sint32 x, Sint32 y, Sint32 radius, Sint32 intensity) 
 				}
 				if( wallhit==FALSE || (wallhit==TRUE && u2==u && v2==v) ) {
 					light->tiles[(dy+radius)+(dx+radius)*(radius*2+1)] = intensity-intensity*std::min(sqrt(dx*dx+dy*dy)/radius,1.0);
-					lightmap[v+u*map.height] += light->tiles[(dy+radius)+(dx+radius)*(radius*2+1)];
+					lightmap[v+u*map.getHeight()] += light->tiles[(dy+radius)+(dx+radius)*(radius*2+1)];
 				}
 			}
 		}
@@ -121,11 +121,11 @@ light_t *lightSphere(Sint32 x, Sint32 y, Sint32 radius, Sint32 intensity) {
 	
 	for( v=y-radius; v<=y+radius; v++ ) {
 		for( u=x-radius; u<=x+radius; u++ ) {
-			if( u>=0 && v>=0 && u<map.width && v<map.height ) {
+			if( u>=0 && v>=0 && u<map.getWidth() && v<map.getHeight() ) {
 				dx = u-x;
 				dy = v-y;
 				light->tiles[(dy+radius)+(dx+radius)*(radius*2+1)] = intensity-intensity*std::min(sqrt(dx*dx+dy*dy)/radius,1.0);
-				lightmap[v+u*map.height] += light->tiles[(dy+radius)+(dx+radius)*(radius*2+1)];
+				lightmap[v+u*map.getHeight()] += light->tiles[(dy+radius)+(dx+radius)*(radius*2+1)];
 			}
 		}
 	}

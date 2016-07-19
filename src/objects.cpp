@@ -95,9 +95,9 @@ void lightDeconstructor(void *data) {
 		if( light->tiles != NULL ) {
 			for(y=0; y<light->radius*2; y++) {
 				for(x=0; x<light->radius*2; x++) {
-					if( x+light->x-light->radius>=0 && x+light->x-light->radius<map.width )
-						if( y+light->y-light->radius>=0 && y+light->y-light->radius<map.height )
-							lightmap[(y+light->y-light->radius)+(x+light->x-light->radius)*map.height] -= light->tiles[y+x*(light->radius*2+1)];
+					if( x+light->x-light->radius>=0 && x+light->x-light->radius<map.getWidth() )
+						if( y+light->y-light->radius>=0 && y+light->y-light->radius<map.getHeight() )
+							lightmap[(y+light->y-light->radius)+(x+light->x-light->radius)*map.getHeight()] -= light->tiles[y+x*(light->radius*2+1)];
 				}
 			}
 			free(light->tiles);
@@ -114,7 +114,7 @@ void lightDeconstructor(void *data) {
 
 -------------------------------------------------------------------------------*/
 
-void mapDeconstructor(void *data) {
+/*void mapDeconstructor(void *data) {
 	map_t *map;
 
 	if(data != NULL) {
@@ -127,7 +127,7 @@ void mapDeconstructor(void *data) {
 		}
 		free(data);
 	}
-}
+}*/
 
 /*-------------------------------------------------------------------------------
 
@@ -145,6 +145,33 @@ void listDeconstructor(void *data) {
 		list_FreeAll(list);
 		free(data);
 	}
+}
+
+/*-------------------------------------------------------------------------------
+
+newEntity
+
+Creates a new entity with empty settings.  Note it does not get put in any list (handled manually)
+
+-------------------------------------------------------------------------------*/
+
+Entity *newEntity(Sint32 sprite, Uint32 pos) {
+	Entity *entity;
+
+	// allocate memory for entity
+	/*if( (entity = (Entity *) malloc(sizeof(Entity)))==NULL ) {
+	printlog( "failed to allocate memory for new entity!\n" );
+	exit(1);
+	}*/
+	try {
+		entity = new Entity(sprite, pos);
+	}
+	catch (std::bad_alloc& ba) {
+		printlog("failed to allocate memory for new entity!\n");
+		exit(1);
+	}
+
+	return entity;
 }
 
 /*-------------------------------------------------------------------------------

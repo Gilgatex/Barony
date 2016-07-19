@@ -95,8 +95,8 @@ void actThrown(Entity *my) {
 		my->z += THROWN_VELZ;
 		my->roll += 0.04;
 	} else {
-		if( my->x>=0 && my->y>=0 && my->x<map.width<<4 && my->y<map.height<<4 ) {
-			if( map.tiles[(int)(my->y/16)*MAPLAYERS+(int)(my->x/16)*MAPLAYERS*map.height] ) {
+		if( my->x>=0 && my->y>=0 && my->x<map.getWidth()<<4 && my->y<map.getHeight()<<4 ) {
+			if( map.getTiles()[(int)(my->y/16)*MAPLAYERS+(int)(my->x/16)*MAPLAYERS*map.getHeight()] ) {
 				item = newItemFromEntity(my);
 				if( itemCategory(item)==POTION ) {
 					playSoundEntity(my,162,64);

@@ -115,9 +115,9 @@ void slimeDie(Entity *my) {
 	}
 	if (spawn_blood) {
 		int x, y;
-		x = std::min<unsigned int>(std::max<int>(0,my->x/16),map.width-1);
-		y = std::min<unsigned int>(std::max<int>(0,my->y/16),map.height-1);
-		if( map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height] ) {
+		x = std::min<unsigned int>(std::max<int>(0,my->x/16),map.getWidth()-1);
+		y = std::min<unsigned int>(std::max<int>(0,my->y/16),map.getHeight()-1);
+		if( map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] ) {
 			if( !checkObstacle(my->x,my->y,my,NULL) ) {
 				if( my->sprite == 210 )
 					entity = newEntity(212,1,map.entities);

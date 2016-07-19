@@ -138,7 +138,7 @@ voxel_t *loadVoxel(char *filename2) {
 
 -------------------------------------------------------------------------------*/
 
-int loadMap(char *filename2, map_t *destmap, list_t *entlist) {
+/*int loadMap(char *filename2, map_t *destmap, list_t *entlist) {
 	FILE *fp;
 	char valid_data[11];
 	Uint32 numentities;
@@ -206,8 +206,8 @@ int loadMap(char *filename2, map_t *destmap, list_t *entlist) {
 			free(destmap->tiles);
 		fread(destmap->name, sizeof(char), 32, fp); // map name
 		fread(destmap->author, sizeof(char), 32, fp); // map author
-		fread(&destmap->width, sizeof(Uint32), 1, fp); // map width
-		fread(&destmap->height, sizeof(Uint32), 1, fp); // map height
+		fread(&destmap->width, sizeof(Uint32), 1, fp); // map.getWidth()
+		fread(&destmap->height, sizeof(Uint32), 1, fp); // map.getHeight()
 		destmap->tiles = (Sint32 *) malloc(sizeof(Sint32)*destmap->width*destmap->height*MAPLAYERS);
 		fread(destmap->tiles, sizeof(Sint32), destmap->width*destmap->height*MAPLAYERS, fp);
 		fread(&numentities,sizeof(Uint32), 1, fp); // number of entities on the map
@@ -281,7 +281,7 @@ int loadMap(char *filename2, map_t *destmap, list_t *entlist) {
 	} else {
 		return -1;
 	}
-}
+}*/
 
 /*-------------------------------------------------------------------------------
 
@@ -314,9 +314,9 @@ int saveMap(char *filename2) {
 		fwrite("BARONY", sizeof(char), strlen("BARONY"), fp); // magic code
 		fwrite(map.name, sizeof(char), 32, fp); // map filename
 		fwrite(map.author, sizeof(char), 32, fp); // map author
-		fwrite(&map.width, sizeof(Uint32), 1, fp); // map width
-		fwrite(&map.height, sizeof(Uint32), 1, fp); // map height
-		fwrite(map.tiles, sizeof(Sint32), map.width*map.height*MAPLAYERS, fp);
+		fwrite(&map.getWidth(), sizeof(Uint32), 1, fp); // map.getWidth()
+		fwrite(&map.getHeight(), sizeof(Uint32), 1, fp); // map.getHeight()
+		fwrite(map.getTiles(), sizeof(Sint32), map.getWidth()*map.getHeight()*MAPLAYERS, fp);
 		for(node=map.entities->first;node!=NULL;node=node->next)
 			numentities++;
 		fwrite(&numentities,sizeof(Uint32), 1, fp); // number of entities on the map

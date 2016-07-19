@@ -697,8 +697,8 @@ void actPlayer(Entity *my) {
 
 		if( !levitating && prevlevitating ) {
 			int x, y, u, v;
-			x = std::min(std::max<unsigned int>(1,my->x/16),map.width-2);
-			y = std::min(std::max<unsigned int>(1,my->y/16),map.height-2);
+			x = std::min(std::max<unsigned int>(1,my->x/16),map.getWidth()-2);
+			y = std::min(std::max<unsigned int>(1,my->y/16),map.getHeight()-2);
 			for( u=x-1; u<=x+1; u++ ) {
 				for( v=y-1; v<=y+1; v++ ) {
 					if( entityInsideTile(my,u,v,0) ) { // no floor
@@ -721,23 +721,23 @@ void actPlayer(Entity *my) {
 	bool swimming = FALSE;
 	if( PLAYER_NUM==clientnum || multiplayer==SERVER ) {
 		if( !levitating && !waterwalkingboots ) {
-			int x = std::min(std::max<unsigned int>(0,floor(my->x/16)),map.width-1);
-			int y = std::min(std::max<unsigned int>(0,floor(my->y/16)),map.height-1);
-			if( animatedtiles[map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height]] ) {
+			int x = std::min(std::max<unsigned int>(0,floor(my->x/16)),map.getWidth()-1);
+			int y = std::min(std::max<unsigned int>(0,floor(my->y/16)),map.getHeight()-1);
+			if( animatedtiles[map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()]] ) {
 				if( rand()%400==0 && multiplayer!=CLIENT )
 					my->increaseSkill(PRO_SWIMMING);
 				swimming = TRUE;
 				my->z = 7;
 				if( !PLAYER_INWATER && PLAYER_NUM==clientnum ) {
 					PLAYER_INWATER=1;
-					if( lavatiles[map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height]] ) {
+					if( lavatiles[map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()]] ) {
 						messagePlayer(PLAYER_NUM,language[573]);
 					} else {
 						playSound(136, 128);
 					}
 				}
 				if( multiplayer!=CLIENT ) {
-					if( !lavatiles[map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height]] ) {
+					if( !lavatiles[map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()]] ) {
 						if( my->flags[BURNING] ) {
 							my->flags[BURNING]=FALSE;
 							messagePlayer(PLAYER_NUM,language[574]);
@@ -967,9 +967,9 @@ void actPlayer(Entity *my) {
 					if (spawn_blood) {
 						if( !checkObstacle(my->x,my->y,my,NULL) ) {
 							int x, y;
-							x = std::min(std::max<unsigned int>(0,my->x/16),map.width-1);
-							y = std::min(std::max<unsigned int>(0,my->y/16),map.height-1);
-							if( map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height] ) {
+							x = std::min(std::max<unsigned int>(0,my->x/16),map.getWidth()-1);
+							y = std::min(std::max<unsigned int>(0,my->y/16),map.getHeight()-1);
+							if( map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] ) {
 								entity = newEntity(160,1,map.entities);
 								entity->x = my->x;
 								entity->y = my->y;

@@ -184,10 +184,10 @@ void consoleCommand(char *command_str) {
 			return;
 		}
 		if( players[clientnum] ) {
-			int x = std::min<int>(std::max(0.0,floor(players[clientnum]->x/16)),map.width-1);
-			int y = std::min<int>(std::max(0.0,floor(players[clientnum]->y/16)),map.height-1);
-			messagePlayer(clientnum,"pathMapGrounded value: %d",pathMapGrounded[y+x*map.height]);
-			messagePlayer(clientnum,"pathMapFlying value: %d",pathMapFlying[y+x*map.height]);
+			int x = std::min<int>(std::max(0.0,floor(players[clientnum]->x/16)),map.getWidth()-1);
+			int y = std::min<int>(std::max(0.0,floor(players[clientnum]->y/16)),map.getHeight()-1);
+			messagePlayer(clientnum,"pathMapGrounded value: %d",pathMapGrounded[y+x*map.getHeight()]);
+			messagePlayer(clientnum,"pathMapFlying value: %d",pathMapFlying[y+x*map.getHeight()]);
 		}
 	}
 	else if( !strncmp(command_str,"/exit",5) ) {

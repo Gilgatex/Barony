@@ -29,10 +29,10 @@
 void actAnimator(Entity *my) {
 	if( my->skill[4]==0 ) {
 		my->skill[4]=1;
-		map.tiles[my->skill[0]+(int)my->y*MAPLAYERS+(int)my->x*MAPLAYERS*map.height]-=my->skill[1]-1;
+		map.getTiles()[my->skill[0]+(int)my->y*MAPLAYERS+(int)my->x*MAPLAYERS*map.getHeight()]-=my->skill[1]-1;
 	}
 
-	if( (int)floor(my->x)<0 || (int)floor(my->x)>=map.width || (int)floor(my->y)<0 || (int)floor(my->y)>=map.height ) {
+	if( (int)floor(my->x)<0 || (int)floor(my->x)>=map.getWidth() || (int)floor(my->y)<0 || (int)floor(my->y)>=map.getHeight() ) {
 		list_RemoveNode(my->mynode);
 		return;
 	}
@@ -40,11 +40,11 @@ void actAnimator(Entity *my) {
 	my->skill[3]++;
 	if( my->skill[3] >= 10 ) {
 		my->skill[3]=0;
-		map.tiles[my->skill[0]+(int)floor(my->y)*MAPLAYERS+(int)floor(my->x)*MAPLAYERS*map.height]++;
+		map.getTiles()[my->skill[0]+(int)floor(my->y)*MAPLAYERS+(int)floor(my->x)*MAPLAYERS*map.getHeight()]++;
 		my->skill[5]++;
 		if(my->skill[5]==my->skill[1]) {
 			my->skill[5]=0;
-			map.tiles[my->skill[0]+(int)floor(my->y)*MAPLAYERS+(int)floor(my->x)*MAPLAYERS*map.height] -= my->skill[1];
+			map.getTiles()[my->skill[0]+(int)floor(my->y)*MAPLAYERS+(int)floor(my->x)*MAPLAYERS*map.getHeight()] -= my->skill[1];
 		}
 	}
 }

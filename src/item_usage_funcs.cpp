@@ -1172,11 +1172,11 @@ void item_ScrollMagicMapping(Item *item, int player) {
 		messagePlayer(player, language[868]);
 		for( y=0; y<64; y++ ) {
 			for( x=0; x<64; x++ ) {
-				if( x<map.width && y<map.height ) {
-					if( map.tiles[OBSTACLELAYER+y*MAPLAYERS+x*MAPLAYERS*map.height] ) {
+				if( x<map.getWidth() && y<map.getHeight() ) {
+					if( map.getTiles()[OBSTACLELAYER+y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] ) {
 						if( !minimap[y][x] )
 							minimap[y][x] = 4;
-					} else if( map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height] ) {
+					} else if( map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] ) {
 						if( !minimap[y][x] )
 							minimap[y][x] = 3;
 					} else {
@@ -1187,8 +1187,8 @@ void item_ScrollMagicMapping(Item *item, int player) {
 		}
 	} else {
 		messagePlayer(player, language[869]);
-		for( y=0; y<map.height; y++ ) {
-			for( x=0; x<map.width; x++ ) {
+		for( y=0; y<map.getHeight(); y++ ) {
+			for( x=0; x<map.getWidth(); x++ ) {
 				minimap[y][x] = 0;
 			}
 		}

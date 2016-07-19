@@ -370,12 +370,12 @@ void sendMapTCP(int c) {
 
 	// send all the map data to the client
 	for( z=0; z<MAPLAYERS; z++ ) {
-		for( y=0; y<map.height; y++ ) {
-			for( x=0; x<map.width; x++ )
-				net_packet->data[x] = map.tiles[z+y*MAPLAYERS+x*MAPLAYERS*map.height];
+		for( y=0; y<map.getHeight(); y++ ) {
+			for( x=0; x<map.getWidth(); x++ )
+				net_packet->data[x] = map.getTiles()[z+y*MAPLAYERS+x*MAPLAYERS*map.getHeight()];
 			net_packet->address.host = net_clients[c-1].host;
 			net_packet->address.port = net_clients[c-1].port;
-			net_packet->len = map.width;
+			net_packet->len = map.getWidth();
 			if( directConnect ) {
 				SDLNet_TCP_Send(net_tcpclients[c-1],net_packet->data,net_packet->len);
 			} else {
@@ -1107,8 +1107,8 @@ void clientHandlePacket()
 	else if (!strncmp((char *)net_packet->data,"WALC",4)) {
 		int y = SDLNet_Read16(&net_packet->data[6]);
 		int x = SDLNet_Read16(&net_packet->data[4]);
-		if ( x>=0 && x<map.width && y>=0 && y<map.height )
-			map.tiles[OBSTACLELAYER + y*MAPLAYERS + x*MAPLAYERS*map.height] = map.tiles[y*MAPLAYERS + x*MAPLAYERS*map.height];
+		if ( x>=0 && x<map.getWidth() && y>=0 && y<map.getHeight() )
+			map.getTiles()[OBSTACLELAYER + y*MAPLAYERS + x*MAPLAYERS*map.getHeight()] = map.getTiles()[y*MAPLAYERS + x*MAPLAYERS*map.getHeight()];
 		return;
 	}
 
@@ -1116,8 +1116,8 @@ void clientHandlePacket()
 	else if (!strncmp((char *)net_packet->data,"WALD",4)) {
 		int y = SDLNet_Read16(&net_packet->data[6]);
 		int x = SDLNet_Read16(&net_packet->data[4]);
-		if ( x>=0 && x<map.width && y>=0 && y<map.height )
-			map.tiles[OBSTACLELAYER + y*MAPLAYERS + x*MAPLAYERS*map.height] = 0;
+		if ( x>=0 && x<map.getWidth() && y>=0 && y<map.getHeight() )
+			map.getTiles()[OBSTACLELAYER + y*MAPLAYERS + x*MAPLAYERS*map.getHeight()] = 0;
 		return;
 	}
 
@@ -1125,9 +1125,9 @@ void clientHandlePacket()
 	else if (!strncmp((char *)net_packet->data,"WACD",4)) {
 		int y = SDLNet_Read16(&net_packet->data[6]);
 		int x = SDLNet_Read16(&net_packet->data[4]);
-		if ( x>=0 && x<map.width && y>=0 && y<map.height ) {
-			map.tiles[OBSTACLELAYER + y*MAPLAYERS + x*MAPLAYERS*map.height] = 0;
-			map.tiles[(MAPLAYERS-1) + y*MAPLAYERS + x*MAPLAYERS*map.height] = 0;
+		if ( x>=0 && x<map.getWidth() && y>=0 && y<map.getHeight() ) {
+			map.getTiles()[OBSTACLELAYER + y*MAPLAYERS + x*MAPLAYERS*map.getHeight()] = 0;
+			map.getTiles()[(MAPLAYERS-1) + y*MAPLAYERS + x*MAPLAYERS*map.getHeight()] = 0;
 		}
 		return;
 	}
@@ -1879,10 +1879,10 @@ void clientHandlePacket()
 		}
 		if ( strstr(map.name,"Hell") ) {
 			int x, y;
-			for ( y=map.height/2-1; y<map.height/2+2; y++ ) {
-				for ( x=3; x<map.width/2; x++ ) {
-					if ( !map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height] )
-						map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height] = 72;
+			for ( y=map.getHeight()/2-1; y<map.getHeight()/2+2; y++ ) {
+				for ( x=3; x<map.getWidth()/2; x++ ) {
+					if ( !map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] )
+						map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] = 72;
 				}
 			}
 		}

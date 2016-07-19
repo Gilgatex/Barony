@@ -164,10 +164,10 @@ void actBoulder(Entity *my) {
 	my->flags[UPDATENEEDED] = TRUE;
 
 	bool noground=FALSE;
-	int x = std::min<int>(std::max(0,(int)(my->x/16)),map.width);
-	int y = std::min<int>(std::max(0,(int)(my->y/16)),map.height);
-	Uint32 index = y*MAPLAYERS+x*MAPLAYERS*map.height;
-	if( !map.tiles[index] || animatedtiles[map.tiles[index]] )
+	int x = std::min<int>(std::max(0,(int)(my->x/16)),map.getWidth());
+	int y = std::min<int>(std::max(0,(int)(my->y/16)),map.getHeight());
+	Uint32 index = y*MAPLAYERS+x*MAPLAYERS*map.getHeight();
+	if( !map.getTiles()[index] || animatedtiles[map.getTiles()[index]] )
 		noground = TRUE;
 
 	// gravity
@@ -239,9 +239,9 @@ void actBoulder(Entity *my) {
 			my->vel_y = 1.5;
 		if( my->vel_y < -1.5 )
 			my->vel_y = -1.5;
-		int x = std::min<int>(std::max(0.0,(my->x+cos(my->yaw)*8)/16),map.width-1);
-		int y = std::min<int>(std::max(0.0,(my->y+sin(my->yaw)*8)/16),map.height-1);
-		if( map.tiles[OBSTACLELAYER+y*MAPLAYERS+x*MAPLAYERS*map.height] ) {
+		int x = std::min<int>(std::max(0.0,(my->x+cos(my->yaw)*8)/16),map.getWidth()-1);
+		int y = std::min<int>(std::max(0.0,(my->y+sin(my->yaw)*8)/16),map.getHeight()-1);
+		if( map.getTiles()[OBSTACLELAYER+y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] ) {
 			playSoundEntity(my,181,128);
 			BOULDER_STOPPED = 1;
 		} else {
@@ -330,9 +330,9 @@ void actBoulder(Entity *my) {
 			}
 			int x = (my->x+my->vel_x*8)/16;
 			int y = (my->y+my->vel_y*8)/16;
-			x = std::min<unsigned int>(std::max(0,x),map.width-1);
-			y = std::min<unsigned int>(std::max(0,y),map.height-1);
-			if( map.tiles[OBSTACLELAYER+y*MAPLAYERS+x*MAPLAYERS*map.height] ) {
+			x = std::min<unsigned int>(std::max(0,x),map.getWidth()-1);
+			y = std::min<unsigned int>(std::max(0,y),map.getHeight()-1);
+			if( map.getTiles()[OBSTACLELAYER+y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] ) {
 				BOULDER_ROLLING = 0;
 			} else {
 				my->x += my->vel_x;
@@ -451,8 +451,8 @@ void actBoulderTrap(Entity *my) {
 				}
 				x = ((int)(x+my->x))>>4;
 				y = ((int)(y+my->y))>>4;
-				if( x>=0 && y>=0 && x<map.width && y<map.height ) {
-					if( !map.tiles[OBSTACLELAYER+y*MAPLAYERS+x*MAPLAYERS*map.height] ) {
+				if( x>=0 && y>=0 && x<map.getWidth() && y<map.getHeight() ) {
+					if( !map.getTiles()[OBSTACLELAYER+y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] ) {
 						Entity *entity = newEntity(245, 1, map.entities); // boulder
 						entity->parent = my->uid;
 						entity->x = (x<<4)+8;

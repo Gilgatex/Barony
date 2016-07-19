@@ -34,11 +34,11 @@ PFNGLVERTEXATTRIBPOINTERPROC SDL_glVertexAttribPointer;
 -------------------------------------------------------------------------------*/
 
 double getLightForEntity(double x, double y) {
-	if( x<0 || y<0 || x>=map.width || y>=map.height )
+	if( x<0 || y<0 || x>=map.getWidth() || y>=map.getHeight() )
 		return 1.f;
 	int u = x;
 	int v = y;
-	return std::min(std::max(0,lightmap[v+u*map.height]),255)/255.0;
+	return std::min(std::max(0,lightmap[v+u*map.getHeight()]),255)/255.0;
 }
 
 /*-------------------------------------------------------------------------------
@@ -409,8 +409,8 @@ double getLightAt(int x, int y) {
 	
 	for( u=x-1; u<x+1; u++ ) {
 		for( v=y-1; v<y+1; v++ ) {
-			if( u>=0 && u<map.width && v>=0 && v<map.height ) {
-				l += std::min(std::max(0,lightmap[v+u*map.height]),255)/255.0;
+			if( u>=0 && u<map.getWidth() && v>=0 && v<map.getHeight() ) {
+				l += std::min(std::max(0,lightmap[v+u*map.getHeight()]),255)/255.0;
 			}
 		}
 	}
@@ -512,31 +512,31 @@ void glDrawWorld(view_t *camera, int mode) {
 	else
 		glDisable(GL_BLEND);
 
-	for( x=0; x<map.width; x++ ) {
-		for( y=0; y<map.height; y++ ) {
+	for( x=0; x<map.getWidth(); x++ ) {
+		for( y=0; y<map.getHeight(); y++ ) {
 			if( x>=(int)camera->x-3 && x<=(int)camera->x+3 && y>=(int)camera->y-3 && y<=(int)camera->y+3 )
-				vismap[y+x*map.height] = TRUE;
-			if( vismap[y+x*map.height] ) {
+				vismap[y+x*map.getHeight()] = TRUE;
+			if( vismap[y+x*map.getHeight()] ) {
 				for( z=0; z<MAPLAYERS+1; z++ ) {
-					index = z+y*MAPLAYERS+x*MAPLAYERS*map.height;
+					index = z+y*MAPLAYERS+x*MAPLAYERS*map.getHeight();
 					
 					if( z>=0 && z<MAPLAYERS ) {
 						// skip "air" tiles
-						if( map.tiles[index]==0 )
+						if( map.getTiles()[index]==0 )
 							continue;
 						
 						// bind texture
 						if( mode==REALCOLORS ) {
-							if( map.tiles[index]<0 || map.tiles[index]>=numtiles )
+							if( map.getTiles()[index]<0 || map.getTiles()[index]>=numtiles )
 								glBindTexture(GL_TEXTURE_2D,texid[sprites[0]->refcount]);
 							else
-								glBindTexture(GL_TEXTURE_2D,texid[tiles[map.tiles[index]]->refcount]);
+								glBindTexture(GL_TEXTURE_2D,texid[tiles[map.getTiles()[index]]->refcount]);
 						} else {
 							glBindTexture(GL_TEXTURE_2D,0);
 						}
 						
 						// draw east wall
-						if( x==map.width-1 || !map.tiles[index + MAPLAYERS*map.height] ) {
+						if( x==map.getWidth()-1 || !map.getTiles()[index + MAPLAYERS*map.getHeight()] ) {
 							if( smoothlighting && mode==REALCOLORS ) {
 								glBegin( GL_QUADS );
 									if( z ) {
@@ -563,15 +563,15 @@ void glDrawWorld(view_t *camera, int mode) {
 								glEnd();
 							} else {
 								if( mode==REALCOLORS ) {
-									if( x<map.width-1 )
-										s=std::min(std::max(0,lightmap[y+(x+1)*map.height]),255)/255.0;
+									if( x<map.getWidth()-1 )
+										s=std::min(std::max(0,lightmap[y+(x+1)*map.getHeight()]),255)/255.0;
 									else
 										s=.5;
 									glColor3f(s,s,s);
 								} else {
 									glColor4ub(0,0,0,0);
 								}
-								if( x==map.width-1 || !map.tiles[z+y*MAPLAYERS+(x+1)*MAPLAYERS*map.height] ) {
+								if( x==map.getWidth()-1 || !map.getTiles()[z+y*MAPLAYERS+(x+1)*MAPLAYERS*map.getHeight()] ) {
 									glBegin( GL_QUADS );
 										glTexCoord2f(0, 0); glVertex3f(x*32+32,z*32-16,y*32+32);
 										glTexCoord2f(0, 1); glVertex3f(x*32+32,z*32-48,y*32+32);
@@ -583,7 +583,7 @@ void glDrawWorld(view_t *camera, int mode) {
 						}
 						
 						// draw south wall
-						if( y==map.height-1 || !map.tiles[index + MAPLAYERS] ) {
+						if( y==map.getHeight()-1 || !map.getTiles()[index + MAPLAYERS] ) {
 							if( smoothlighting && mode==REALCOLORS ) {
 								glBegin( GL_QUADS );
 									if( z ) {
@@ -610,13 +610,13 @@ void glDrawWorld(view_t *camera, int mode) {
 								glEnd();
 							} else {
 								if( mode==REALCOLORS ) {
-									if( y<map.height-1 )
-										s=std::min(std::max(0,lightmap[(y+1)+x*map.height]),255)/255.0;
+									if( y<map.getHeight()-1 )
+										s=std::min(std::max(0,lightmap[(y+1)+x*map.getHeight()]),255)/255.0;
 									else
 										s=.5;
 									glColor3f(s,s,s);
 								}
-								if( y==map.height-1 || !map.tiles[z+(y+1)*MAPLAYERS+x*MAPLAYERS*map.height] ) {
+								if( y==map.getHeight()-1 || !map.getTiles()[z+(y+1)*MAPLAYERS+x*MAPLAYERS*map.getHeight()] ) {
 									glBegin( GL_QUADS );
 										glTexCoord2f(0, 0); glVertex3f(x*32+0,z*32-16,y*32+32);
 										glTexCoord2f(0, 1); glVertex3f(x*32+0,z*32-48,y*32+32);
@@ -628,7 +628,7 @@ void glDrawWorld(view_t *camera, int mode) {
 						}
 						
 						// draw west wall
-						if( x==0 || !map.tiles[index - MAPLAYERS*map.height] ) {
+						if( x==0 || !map.getTiles()[index - MAPLAYERS*map.getHeight()] ) {
 							if( smoothlighting && mode==REALCOLORS ) {
 								glBegin( GL_QUADS );
 									if( z ) {
@@ -656,12 +656,12 @@ void glDrawWorld(view_t *camera, int mode) {
 							} else {
 								if( mode==REALCOLORS ) {
 									if( x>0 )
-										s=std::min(std::max(0,lightmap[y+(x-1)*map.height]),255)/255.0;
+										s=std::min(std::max(0,lightmap[y+(x-1)*map.getHeight()]),255)/255.0;
 									else
 										s=.5;
 									glColor3f(s,s,s);
 								}
-								if( x==0 || !map.tiles[z+y*MAPLAYERS+(x-1)*MAPLAYERS*map.height] ) {
+								if( x==0 || !map.getTiles()[z+y*MAPLAYERS+(x-1)*MAPLAYERS*map.getHeight()] ) {
 									glBegin( GL_QUADS );
 										glTexCoord2f(0, 0); glVertex3f(x*32+0,z*32-16,y*32+0);
 										glTexCoord2f(0, 1); glVertex3f(x*32+0,z*32-48,y*32+0);
@@ -673,7 +673,7 @@ void glDrawWorld(view_t *camera, int mode) {
 						}
 						
 						// draw north wall
-						if( y==0 || !map.tiles[index - MAPLAYERS] ) {
+						if( y==0 || !map.getTiles()[index - MAPLAYERS] ) {
 							if( smoothlighting && mode==REALCOLORS ) {
 								glBegin( GL_QUADS );
 									if( z ) {
@@ -701,12 +701,12 @@ void glDrawWorld(view_t *camera, int mode) {
 							} else {
 								if( mode==REALCOLORS ) {
 									if( y>0 )
-										s=std::min(std::max(0,lightmap[(y-1)+x*map.height]),255)/255.0;
+										s=std::min(std::max(0,lightmap[(y-1)+x*map.getHeight()]),255)/255.0;
 									else
 										s=.5;
 									glColor3f(s,s,s);
 								}
-								if( y==0 || !map.tiles[z+(y-1)*MAPLAYERS+x*MAPLAYERS*map.height] ) {
+								if( y==0 || !map.getTiles()[z+(y-1)*MAPLAYERS+x*MAPLAYERS*map.getHeight()] ) {
 									glBegin( GL_QUADS );
 										glTexCoord2f(0, 0); glVertex3f(x*32+32,z*32-16,y*32+0);
 										glTexCoord2f(0, 1); glVertex3f(x*32+32,z*32-48,y*32+0);
@@ -728,7 +728,7 @@ void glDrawWorld(view_t *camera, int mode) {
 					if( smoothlighting && mode==REALCOLORS ) {
 						// draw floor
 						if( z<OBSTACLELAYER ) {
-							if( !map.tiles[index+1] ) {
+							if( !map.getTiles()[index+1] ) {
 								glBegin( GL_QUADS );
 									s=getLightAt(x,y);
 									glColor3f(s,s,s);
@@ -748,7 +748,7 @@ void glDrawWorld(view_t *camera, int mode) {
 						
 						// draw ceiling
 						else if( z>OBSTACLELAYER && (!clouds || z<MAPLAYERS) ) {
-							if( !map.tiles[index-1] ) {
+							if( !map.getTiles()[index-1] ) {
 								glBegin( GL_QUADS );
 									s=getLightAt(x,y);
 									glColor3f(s,s,s);
@@ -768,13 +768,13 @@ void glDrawWorld(view_t *camera, int mode) {
 					} else {
 						// unsmooth lighting
 						if( mode==REALCOLORS ) {
-							s=std::min(std::max(0,lightmap[y+x*map.height]),255)/255.0;
+							s=std::min(std::max(0,lightmap[y+x*map.getHeight()]),255)/255.0;
 							glColor3f(s,s,s);
 						}
 						
 						// draw floor
 						if( z<OBSTACLELAYER ) {
-							if( !map.tiles[index+1] ) {
+							if( !map.getTiles()[index+1] ) {
 								glBegin( GL_QUADS );
 									glTexCoord2f(0, 0); glVertex3f(x*32+0,-16-32*abs(z),y*32+0);
 									glTexCoord2f(0, 1); glVertex3f(x*32+0,-16-32*abs(z),y*32+32);
@@ -786,7 +786,7 @@ void glDrawWorld(view_t *camera, int mode) {
 						
 						// draw ceiling
 						else if( z>OBSTACLELAYER ) {
-							if( !map.tiles[index-1] ) {
+							if( !map.getTiles()[index-1] ) {
 								glBegin( GL_QUADS );
 									glTexCoord2f(0, 0); glVertex3f(x*32+0,16+32*abs(z-2),y*32+0);
 									glTexCoord2f(1, 0); glVertex3f(x*32+32,16+32*abs(z-2),y*32+0);

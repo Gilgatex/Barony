@@ -18,7 +18,10 @@
 #include <algorithm> //For min and max, because the #define breaks everything in c++.
 
 #include <string>
-using namespace std; //For C++ strings
+#include <list>
+#include <sstream>
+#include <iomanip>
+using namespace std; //For C++ strings and lists
 
 #ifdef _WIN32
 #define WINDOWS
@@ -87,6 +90,7 @@ using namespace std; //For C++ strings
 #endif
 //#include "sprig.h"
 #include "savepng.hpp"
+#include "map.hpp"
 	
 #ifndef APPLE
 #define FALSE false
@@ -201,14 +205,13 @@ typedef struct list_t {
 extern list_t button_l;
 extern list_t light_l;
 
-// game world structure
-typedef struct map_t {
+/*typedef struct map_t {
 	char name[32];   // name of the map
 	char author[32]; // author of the map
 	unsigned int width, height;  // size of the map
 	Sint32 *tiles;
 	list_t *entities;
-} map_t;
+} map_t;*/
 
 #define MAPLAYERS 3 // number of layers contained in a single map
 #define OBSTACLELAYER 1 // obstacle layer in map
@@ -412,7 +415,7 @@ extern void *steamIDRemote[MAXPLAYERS]; //TODO: Bugger void pointer.
 #include "hash.hpp"
 
 // various definitions
-extern map_t map;
+extern Map map;
 extern list_t ttfTextHash[HASH_SIZE];
 extern TTF_Font *ttf8;
 #define TTF8_WIDTH 7
@@ -487,9 +490,10 @@ void defaultDeconstructor(void *data);
 void emptyDeconstructor(void *data);
 void entityDeconstructor(void *data);
 void lightDeconstructor(void *data);
-void mapDeconstructor(void *data);
+//void mapDeconstructor(void *data);
 void stringDeconstructor(void *data);
 void listDeconstructor(void *data);
+Entity *newEntity(Sint32 sprite, Uint32 pos);
 Entity *newEntity(Sint32 sprite, Uint32 pos, list_t *entlist);
 button_t *newButton(void);
 light_t *newLight(Sint32 x, Sint32 y, Sint32 radius, Sint32 intensity);
@@ -513,7 +517,7 @@ void drawImageFancy(SDL_Surface *image, Uint32 color, double angle, SDL_Rect *sr
 void drawImageRotatedAlpha(SDL_Surface *image, SDL_Rect *src, SDL_Rect *pos, double angle, Uint8 alpha);
 SDL_Surface* scaleSurface(SDL_Surface *Surface, Uint16 Width, Uint16 Height);
 void drawSky3D(view_t *camera, SDL_Surface *tex);
-void drawLayer(long camx, long camy, int z, map_t *map);
+void drawLayer(long camx, long camy, int z, Map *map);
 void drawBackground(long camx, long camy);
 void drawForeground(long camx, long camy);
 void drawClearBuffers();
@@ -554,7 +558,7 @@ void glDrawWorld(view_t *camera, int mode);
 void glLoadTexture(SDL_Surface *image, int texnum);
 SDL_Surface *loadImage(char *filename);
 voxel_t *loadVoxel(char *filename2);
-int loadMap(char *filename, map_t *destmap, list_t *entlist);
+int loadMap(char *filename, Map *destmap, list_t *entlist);
 int loadConfig(char *filename);
 int saveMap(char *filename);
 
@@ -563,7 +567,7 @@ SDL_Cursor *newCursor(char *image[]);
 
 // function prototypes for maps.c:
 int generateDungeon(char *levelset, Uint32 seed);
-void assignActions(map_t *map);
+void assignActions(Map *map);
 
 // cursor bitmap definitions
 extern char *cursor_pencil[];

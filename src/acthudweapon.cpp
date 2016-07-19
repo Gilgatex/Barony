@@ -188,9 +188,9 @@ void actHudWeapon(Entity *my) {
 	// swimming
 	if( players[clientnum] ) {
 		if( !levitating && !waterwalkingboots ) {
-			int x = std::min<unsigned>(std::max<int>(0,floor(players[clientnum]->x/16)),map.width-1);
-			int y = std::min<unsigned>(std::max<int>(0,floor(players[clientnum]->y/16)),map.height-1);
-			if( animatedtiles[map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height]] ) {
+			int x = std::min<unsigned>(std::max<int>(0,floor(players[clientnum]->x/16)),map.getWidth()-1);
+			int y = std::min<unsigned>(std::max<int>(0,floor(players[clientnum]->y/16)),map.getHeight()-1);
+			if( animatedtiles[map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()]] ) {
 				my->flags[INVISIBLE] = TRUE;
 				if( parent )
 					parent->flags[INVISIBLE] = TRUE;
@@ -885,9 +885,9 @@ void actHudShield(Entity *my) {
 	bool swimming=FALSE;
 	if( players[clientnum] ) {
 		if( !levitating && !waterwalkingboots ) {
-			int x = std::min<int>(std::max<int>(0,floor(players[clientnum]->x/16)),map.width-1);
-			int y = std::min<int>(std::max<int>(0,floor(players[clientnum]->y/16)),map.height-1);
-			if( animatedtiles[map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height]] ) {
+			int x = std::min<int>(std::max<int>(0,floor(players[clientnum]->x/16)),map.getWidth()-1);
+			int y = std::min<int>(std::max<int>(0,floor(players[clientnum]->y/16)),map.getHeight()-1);
+			if( animatedtiles[map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()]] ) {
 				my->flags[INVISIBLE] = TRUE;
 				Entity *parent = uidToEntity(my->parent);
 				if( parent )

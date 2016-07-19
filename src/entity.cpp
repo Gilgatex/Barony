@@ -295,11 +295,11 @@ void Entity::killedByMonsterObituary(Entity *victim) {
 int Entity::entityLight() {
 	if( this->flags[BRIGHT] )
 		return 255;
-	if( this->x < 0 || this->y < 0 || this->x >= map.width<<4 || this->y >= map.height<<4 )
+	if( this->x < 0 || this->y < 0 || this->x >= map.getWidth()<<4 || this->y >= map.getHeight()<<4 )
 		return 255;
 	int light_x = (int)this->x/16;
 	int light_y = (int)this->y/16;
-	return lightmap[light_y+light_x*map.height];
+	return lightmap[light_y+light_x*map.getHeight()];
 }
 
 /*-------------------------------------------------------------------------------
@@ -3043,7 +3043,7 @@ void Entity::attack(int pose, int charge) {
 				// hit a wall
 				if( myStats->weapon != NULL ) {
 					if( myStats->weapon->type == TOOL_PICKAXE ) {
-						if( hit.mapx>=1 && hit.mapx<map.width-1 && hit.mapy>=1 && hit.mapy<map.height-1 ) {
+						if( hit.mapx>=1 && hit.mapx<map.getWidth()-1 && hit.mapy>=1 && hit.mapy<map.getHeight()-1 ) {
 							playSoundPos(hit.x,hit.y,67,128);
 							
 							// spawn several rock items
@@ -3072,7 +3072,7 @@ void Entity::attack(int pose, int charge) {
 								entity->skill[15] = FALSE;       // identified
 							}
 
-							map.tiles[OBSTACLELAYER+hit.mapy*MAPLAYERS+hit.mapx*MAPLAYERS*map.height]=0;
+							map.getTiles()[OBSTACLELAYER+hit.mapy*MAPLAYERS+hit.mapx*MAPLAYERS*map.getHeight()]=0;
 							// send wall destroy info to clients
 							if( multiplayer==SERVER ) {
 								for( c=0; c<MAXPLAYERS; c++ ) {
@@ -3241,8 +3241,8 @@ void Entity::teleportRandom() {
 
 	if (behavior == &actPlayer )
 		player = skill[2];
-	for (int iy=0; iy<map.height; ++iy ) {
-		for (int ix=0; ix<map.width; ++ix ) {
+	for (int iy=0; iy<map.getHeight(); ++iy ) {
+		for (int ix=0; ix<map.getWidth(); ++ix ) {
 			if ( !checkObstacle((ix<<4)+8,(iy<<4)+8,this,NULL) ) {
 				numlocations++;
 			}
@@ -3254,8 +3254,8 @@ void Entity::teleportRandom() {
 	}
 	pickedlocation = rand()%numlocations;
 	numlocations=0;
-	for (int iy=0; iy<map.height; iy++ ) {
-		for(int ix=0; ix<map.width; ix++ ) {
+	for (int iy=0; iy<map.getHeight(); iy++ ) {
+		for(int ix=0; ix<map.getWidth(); ix++ ) {
 			if( !checkObstacle((ix<<4)+8,(iy<<4)+8,this,NULL) ) {
 				if( numlocations==pickedlocation ) {
 					teleport(ix,iy);

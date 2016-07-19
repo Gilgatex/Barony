@@ -295,8 +295,8 @@ void handleLevelMusic() {
 	if( players[clientnum] ) {
 		int x = (int)players[clientnum]->x/16;
 		int y = (int)players[clientnum]->y/16;
-		if( x>=0 && x<map.width && y>=0 && y<map.height )
-			if( shoparea[y+x*map.height] )
+		if( x>=0 && x<map.getWidth() && y>=0 && y<map.getHeight() )
+			if( shoparea[y+x*map.getHeight()] )
 				inshop=TRUE;
 	}
 

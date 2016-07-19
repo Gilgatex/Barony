@@ -32,6 +32,7 @@
 #include "prng.hpp"
 #include "collision.hpp"
 #include "paths.hpp"
+#include "map.hpp"
 
 #ifdef LINUX
 //Sigsegv catching stuff.
@@ -185,8 +186,9 @@ void gameLogic(void) {
 
 	// spawn flame particles on burning objects
 	if( !gamePaused || (multiplayer && !client_disconnected[0]) ) {
-		for( node=map.entities->first; node!=NULL; node=node->next ) {
-			entity = (Entity *)node->element;
+		list <Entity *> mapentities = map.getEntities();
+		for (list<Entity *>::iterator node = map.getEntities().begin(); node != map.getEntities().end(); ++node) {
+			entity = *node;
 			if( entity->flags[BURNING] ) {
 				if( !entity->flags[BURNABLE] ) {
 					entity->flags[BURNING]=FALSE;
@@ -220,17 +222,17 @@ void gameLogic(void) {
 		// animate tiles
 		if( ticks%10==0 && !gamePaused ) {
 			int x, y, z;
-			for( x=0; x<map.width; x++ ) {
-				for( y=0; y<map.height; y++ ) {
+			for( x=0; x<map.getWidth(); x++ ) {
+				for( y=0; y<map.getHeight(); y++ ) {
 					for( z=0; z<MAPLAYERS; z++ ) {
-						if( animatedtiles[map.tiles[z+y*MAPLAYERS+x*MAPLAYERS*map.height]] ) {
-							map.tiles[z+y*MAPLAYERS+x*MAPLAYERS*map.height]--;
-							if( !animatedtiles[map.tiles[z+y*MAPLAYERS+x*MAPLAYERS*map.height]] ) {
-								int tile = map.tiles[z+y*MAPLAYERS+x*MAPLAYERS*map.height];
+						if( animatedtiles[map.getTiles()[z+y*MAPLAYERS+x*MAPLAYERS*map.getHeight()]] ) {
+							map.getTiles()[z+y*MAPLAYERS+x*MAPLAYERS*map.getHeight()]--;
+							if( !animatedtiles[map.getTiles()[z+y*MAPLAYERS+x*MAPLAYERS*map.getHeight()]] ) {
+								int tile = map.getTiles()[z+y*MAPLAYERS+x*MAPLAYERS*map.getHeight()];
 								do {
 									tile++;
 								} while( animatedtiles[tile] );
-								map.tiles[z+y*MAPLAYERS+x*MAPLAYERS*map.height] = tile-1;
+								map.getTiles()[z+y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] = tile-1;
 							}
 						}
 					}
@@ -243,9 +245,8 @@ void gameLogic(void) {
 		x=clientnum;
 		multiplayer = SINGLE;
 		clientnum = 0;
-		for( node=map.entities->first; node!=NULL; node=nextnode ) {
-			nextnode = node->next;
-			entity = (Entity *)node->element;
+		for (list<Entity *>::iterator node = map.getEntities().begin(); node != map.getEntities().end(); ++node) {
+			entity = *node;
 			if( !entity->ranbehavior ) {
 				entity->ticks++;
 				if( entity->behavior != NULL ) {
@@ -260,17 +261,16 @@ void gameLogic(void) {
 						}
 						if( entitydeletedself==FALSE )
 							entity->ranbehavior=TRUE;
-						nextnode=map.entities->first;
+						node=map.getEntities().begin();
 						list_FreeAll(&entitiesdeleted);
 					} else {
 						entity->ranbehavior=TRUE;
-						nextnode = node->next;
 					}
 				}
 			}
 		}
-		for( node=map.entities->first; node!=NULL; node=node->next ) {
-			entity = (Entity *)node->element;
+		for (list<Entity *>::iterator node = map.getEntities().begin(); node != map.getEntities().end(); ++node) {
+			entity = *node;
 			entity->ranbehavior=FALSE;
 		}
 		multiplayer = c;
@@ -311,24 +311,24 @@ void gameLogic(void) {
 			// animate tiles
 			if( !gamePaused ) {
 				int x, y, z;
-				for( x=0; x<map.width; x++ ) {
-					for( y=0; y<map.height; y++ ) {
+				for( x=0; x<map.getWidth(); x++ ) {
+					for( y=0; y<map.getHeight(); y++ ) {
 						for( z=0; z<MAPLAYERS; z++ ) {
-							int index = z+y*MAPLAYERS+x*MAPLAYERS*map.height;
-							if( animatedtiles[map.tiles[index]] ) {
+							int index = z+y*MAPLAYERS+x*MAPLAYERS*map.getHeight();
+							if( animatedtiles[map.getTiles()[index]] ) {
 								if( ticks%10==0 ) {
-									map.tiles[index]--;
-									if( !animatedtiles[map.tiles[index]] ) {
+									map.getTiles()[index]--;
+									if( !animatedtiles[map.getTiles()[index]] ) {
 										do {
-											map.tiles[index]++;
-										} while( animatedtiles[map.tiles[index]] );
-										map.tiles[index]--;
+											map.getTiles()[index]++;
+										} while( animatedtiles[map.getTiles()[index]] );
+										map.getTiles()[index]--;
 									}
 								}
 								if( z==0 ) {
 									// water and lava noises
-									if( ticks%TICKS_PER_SECOND==(y+x*map.height)%TICKS_PER_SECOND && rand()%3==0 ) {
-										if( lavatiles[map.tiles[index]] ) {
+									if( ticks%TICKS_PER_SECOND==(y+x*map.getHeight())%TICKS_PER_SECOND && rand()%3==0 ) {
+										if( lavatiles[map.getTiles()[index]] ) {
 											// bubbling lava
 											playSoundPosLocal( x*16+8, y*16+8, 155, 100 );
 										} else {
@@ -338,11 +338,12 @@ void gameLogic(void) {
 									}
 									
 									// lava bubbles
-									if( lavatiles[map.tiles[index]] ) {
-										if( ticks%40==(y+x*map.height)%40 && rand()%3==0 ) {
+									if( lavatiles[map.getTiles()[index]] ) {
+										if( ticks%40==(y+x*map.getHeight())%40 && rand()%3==0 ) {
 											int c, j=1+rand()%2;
 											for( c=0; c<j; c++ ) {
-												Entity *entity = newEntity(42,1,map.entities);
+												Entity *entity = newEntity(42,1);
+												map.addEntity(entity);
 												entity->behavior = &actGib;
 												entity->x = x*16+rand()%16;
 												entity->y = y*16+rand()%16;
@@ -397,9 +398,8 @@ void gameLogic(void) {
 
 			//if( TICKS_PER_SECOND )
 			//generatePathMaps();
-			for( node=map.entities->first; node!=NULL; node=nextnode ) {
-				nextnode = node->next;
-				entity = (Entity *)node->element;
+			for (list<Entity *>::iterator node = map.getEntities().begin(); node != map.getEntities().end(); ++node) {
+				entity = *node;
 				if( !entity->ranbehavior ) {
 					if( !gamePaused || (multiplayer && !client_disconnected[0]) )
 						entity->ticks++;
@@ -416,17 +416,16 @@ void gameLogic(void) {
 							}
 							if( entitydeletedself==FALSE )
 								entity->ranbehavior=TRUE;
-							nextnode=map.entities->first;
+							node = map.getEntities().begin();
 							list_FreeAll(&entitiesdeleted);
 						} else {
 							entity->ranbehavior=TRUE;
-							nextnode = node->next;
 						}
 					}
 				}
 				if( loadnextlevel == TRUE ) {
-					for( node=map.entities->first; node!=NULL; node=node->next ) {
-						entity = (Entity *)node->element;
+					for (list<Entity *>::iterator node = map.getEntities().begin(); node != map.getEntities().end(); ++node) {
+						entity = *node;
 						entity->flags[NOUPDATE] = TRUE;
 					}
 
@@ -528,7 +527,7 @@ void gameLogic(void) {
 						result = generateDungeon(tempstr,mapseed);
 					} else if( !strcmp(tempstr,"map:") ) {
 						fscanf(fp,"%s",tempstr); while( fgetc(fp) != '\n' ) if( feof(fp) ) break;
-						result = loadMap(tempstr,&map,map.entities);
+						result = map.loadMap(tempstr);
 					}
 					fclose(fp);
 					assignActions(&map);
@@ -541,7 +540,7 @@ void gameLogic(void) {
 					if( !secretlevel )
 						messagePlayer(clientnum,language[710],currentlevel);
 					else
-						messagePlayer(clientnum,language[711],map.name);
+						messagePlayer(clientnum,language[711],map.getName());
 					if( !secretlevel && result ) {
 						switch( currentlevel ) {
 							case 2:
@@ -632,8 +631,8 @@ void gameLogic(void) {
 					break;
 				}
 			}
-			for( node=map.entities->first; node!=NULL; node=node->next ) {
-				entity = (Entity *)node->element;
+			for (list<Entity *>::iterator node = map.getEntities().begin(); node != map.getEntities().end(); ++node) {
+				entity = *node;
 				entity->ranbehavior=FALSE;
 			}
 			
@@ -657,8 +656,8 @@ void gameLogic(void) {
 
 				// send entity info to clients
 				if( ticks%(TICKS_PER_SECOND/8)==0 ) {
-					for( node=map.entities->first; node!=NULL; node=node->next ) {
-						entity = (Entity *)node->element;
+					for (list<Entity *>::iterator node = map.getEntities().begin(); node != map.getEntities().end(); ++node) {
+						entity = *node;
 						for( c=1; c<MAXPLAYERS; c++ ) {
 							if( !client_disconnected[c] ) {
 								if( entity->flags[UPDATENEEDED]==TRUE && entity->flags[NOUPDATE]==FALSE ) {
@@ -842,24 +841,24 @@ void gameLogic(void) {
 			// animate tiles
 			if( !gamePaused ) {
 				int x, y, z;
-				for( x=0; x<map.width; x++ ) {
-					for( y=0; y<map.height; y++ ) {
+				for( x=0; x<map.getWidth(); x++ ) {
+					for( y=0; y<map.getHeight(); y++ ) {
 						for( z=0; z<MAPLAYERS; z++ ) {
-							int index = z+y*MAPLAYERS+x*MAPLAYERS*map.height;
-							if( animatedtiles[map.tiles[index]] ) {
+							int index = z+y*MAPLAYERS+x*MAPLAYERS*map.getHeight();
+							if( animatedtiles[map.getTiles()[index]] ) {
 								if( ticks%10==0 ) {
-									map.tiles[index]--;
-									if( !animatedtiles[map.tiles[index]] ) {
+									map.getTiles()[index]--;
+									if( !animatedtiles[map.getTiles()[index]] ) {
 										do {
-											map.tiles[index]++;
-										} while( animatedtiles[map.tiles[index]] );
-										map.tiles[index]--;
+											map.getTiles()[index]++;
+										} while( animatedtiles[map.getTiles()[index]] );
+										map.getTiles()[index]--;
 									}
 								}
 								if( z==0 ) {
 									// water and lava noises
-									if( ticks%TICKS_PER_SECOND==(y+x*map.height)%TICKS_PER_SECOND && rand()%3==0 ) {
-										if( lavatiles[map.tiles[index]] ) {
+									if( ticks%TICKS_PER_SECOND==(y+x*map.getHeight())%TICKS_PER_SECOND && rand()%3==0 ) {
+										if( lavatiles[map.getTiles()[index]] ) {
 											// bubbling lava
 											playSoundPosLocal( x*16+8, y*16+8, 155, 100 );
 										} else {
@@ -869,11 +868,12 @@ void gameLogic(void) {
 									}
 									
 									// lava bubbles
-									if( lavatiles[map.tiles[index]] ) {
-										if( ticks%40==(y+x*map.height)%40 && rand()%3==0 ) {
+									if( lavatiles[map.getTiles()[index]] ) {
+										if( ticks%40==(y+x*map.getHeight())%40 && rand()%3==0 ) {
 											int c, j=1+rand()%2;
 											for( c=0; c<j; c++ ) {
-												Entity *entity = newEntity(42,1,map.entities);
+												Entity *entity = newEntity(42,1);
+												map.addEntity(entity);
 												entity->behavior = &actGib;
 												entity->x = x*16+rand()%16;
 												entity->y = y*16+rand()%16;
@@ -912,28 +912,24 @@ void gameLogic(void) {
 			}
 
 			// ask for entity delete update
-			if( ticks%4==0 && list_Size(map.entities) ) {
-				node_t *nodeToCheck = list_Node(map.entities,ticks%list_Size(map.entities));
-				if( nodeToCheck ) {
-					Entity *entity = (Entity *)nodeToCheck->element;
-					if( entity ) {
-						if( !entity->flags[NOUPDATE] && entity->uid>0 && entity->uid!=-2 && entity->uid!=-3 && entity->uid!=-4 ) {
-							strcpy((char *)net_packet->data,"ENTE");
-							net_packet->data[4] = clientnum;
-							SDLNet_Write32(entity->uid,&net_packet->data[5]);
-							net_packet->address.host = net_server.host;
-							net_packet->address.port = net_server.port;
-							net_packet->len = 9;
-							sendPacket(net_sock, -1, net_packet, 0);
-						}
+			if( ticks%4==0 && map.getEntities().size) {
+				Entity *entity = map.getEntityAt(ticks%map.getEntities().size);
+				if( entity ) {
+					if( !entity->flags[NOUPDATE] && entity->uid>0 && entity->uid!=-2 && entity->uid!=-3 && entity->uid!=-4 ) {
+						strcpy((char *)net_packet->data,"ENTE");
+						net_packet->data[4] = clientnum;
+						SDLNet_Write32(entity->uid,&net_packet->data[5]);
+						net_packet->address.host = net_server.host;
+						net_packet->address.port = net_server.port;
+						net_packet->len = 9;
+						sendPacket(net_sock, -1, net_packet, 0);
 					}
 				}
 			}
 
 			// run entity actions
-			for( node=map.entities->first; node!=NULL; node=nextnode ) {
-				nextnode = node->next;
-				entity = (Entity *)node->element;
+			for (list<Entity *>::iterator node = map.getEntities().begin(); node != map.getEntities().end(); ++node) {
+				entity = *node;
 				if( !entity->ranbehavior ) {
 					if( !gamePaused || (multiplayer && !client_disconnected[0]) )
 						entity->ticks++;
@@ -950,11 +946,10 @@ void gameLogic(void) {
 								}
 								if( entitydeletedself==FALSE )
 									entity->ranbehavior=TRUE;
-								nextnode=map.entities->first;
+								node = map.getEntities().begin();
 								list_FreeAll(&entitiesdeleted);
 							} else {
 								entity->ranbehavior=TRUE;
-								nextnode = node->next;
 								if( entity->flags[UPDATENEEDED] && !entity->flags[NOUPDATE] ) {
 									// adjust entity position
 									if( ticks-entity->lastupdate<=TICKS_PER_SECOND/16 ) {
@@ -978,7 +973,7 @@ void gameLogic(void) {
 										clipMove(&entity->new_x,&entity->new_y,entity->vel_x,entity->vel_y,entity);
 										if( entity->behavior == &actPlayer ) {
 											node_t *node2;
-											for( node2=map.entities->first; node2!=NULL; node2=node2->next ) {	
+																	node=map.getEntities().begin(); {	
 												Entity *bodypart = (Entity *)node2->element;
 												if( bodypart->behavior == &actPlayerLimb ) {
 													if( bodypart->skill[2] == entity->skill[2] ) {
@@ -991,9 +986,8 @@ void gameLogic(void) {
 											}
 										}
 										if( entity->behavior == &actMonster ) {
-											node_t *node2;
-											for( node2=map.entities->first; node2!=NULL; node2=node2->next ) {	
-												Entity *bodypart = (Entity *)node2->element;
+											for (list<Entity *>::iterator node2 = map.getEntities().begin(); node2 != map.getEntities().end(); ++node2) {
+												Entity *bodypart = *node2;
 												if( bodypart->skill[2] == entity->uid && bodypart->parent == entity->uid ) {
 													bodypart->x += entity->x-ox;
 													bodypart->y += entity->y-oy;
@@ -1043,8 +1037,8 @@ void gameLogic(void) {
 					}
 				}
 			}
-			for( node=map.entities->first; node!=NULL; node=node->next ) {
-				entity = (Entity *)node->element;
+			for (list<Entity *>::iterator node = map.getEntities().begin(); node != map.getEntities().end(); ++node) {
+				entity = *node;
 				entity->ranbehavior=FALSE;
 			}
 
@@ -1620,9 +1614,7 @@ int main(int argc, char **argv) {
 		initialized = TRUE;
 		
 		// initialize map
-		map.tiles = NULL;
-		map.entities = (list_t *) malloc(sizeof(list_t));
-		map.entities->first = NULL; map.entities->last = NULL;
+		Map map;
 		
 		// instantiate a timer
 		timer = SDL_AddTimer(1000/TICKS_PER_SECOND, timerCallback, NULL);
@@ -1753,28 +1745,28 @@ int main(int argc, char **argv) {
 					if( (keystatus[SDL_SCANCODE_ESCAPE] || keystatus[SDL_SCANCODE_SPACE] || keystatus[SDL_SCANCODE_RETURN] || mousestatus[SDL_BUTTON_LEFT] || indev_timer >= indev_displaytime) && !fadeout) {
 						switch( rand()%4 ) {
 							case 0:
-								loadMap("mainmenu1",&map,map.entities);
+								map.loadMap("mainmenu1");
 								camera.x = 8;
 								camera.y = 4.5;
 								camera.z = 0;
 								camera.ang = 0.6;
 								break;
 							case 1:
-								loadMap("mainmenu2",&map,map.entities);
+								map.loadMap("mainmenu2");
 								camera.x = 7;
 								camera.y = 4;
 								camera.z = -4;
 								camera.ang = 1.0;
 								break;
 							case 2:
-								loadMap("mainmenu3",&map,map.entities);
+								map.loadMap("mainmenu3");
 								camera.x = 5;
 								camera.y = 3;
 								camera.z = 0;
 								camera.ang = 1.0;
 								break;
 							case 3:
-								loadMap("mainmenu4",&map,map.entities);
+								map.loadMap("mainmenu4");
 								camera.x = 6;
 								camera.y = 14.5;
 								camera.z = -24;
@@ -1842,8 +1834,8 @@ int main(int argc, char **argv) {
 						// load dungeon
 						mapseed = 0;
 						lastEntityUIDs=entity_uids;
-						for( node=map.entities->first; node!=NULL; node=node->next ) {
-							entity = (Entity *)node->element;
+						for (list<Entity *>::iterator node = map.getEntities().begin(); node != map.getEntities().end(); ++node) {
+							entity = *node;
 							entity->flags[NOUPDATE] = TRUE;
 						}
 						if( loadingmap==FALSE ) {
@@ -1857,12 +1849,12 @@ int main(int argc, char **argv) {
 								generateDungeon(tempstr,rand());
 							} else if( !strcmp(tempstr,"map:") ) {
 								fscanf(fp,"%s",tempstr); while( fgetc(fp) != '\n' ) if( feof(fp) ) break;
-								loadMap(tempstr,&map,map.entities);
+								map.loadMap(tempstr);
 							}
 							fclose(fp);
 						} else {
 							if( genmap==FALSE ) {
-								loadMap(maptoload,&map,map.entities);
+								map.loadMap(maptoload);
 							} else {
 								generateDungeon(maptoload,rand());
 							}

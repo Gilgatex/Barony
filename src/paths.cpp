@@ -114,11 +114,11 @@ pathnode_t **heapRemove(pathnode_t **heap, long *length) {
 -------------------------------------------------------------------------------*/
 
 int pathCheckObstacle(long x, long y, Entity *my, Entity *target) {
-	int u = std::min(std::max<unsigned int>(0,x>>4),map.width);
-	int v = std::min(std::max<unsigned int>(0,y>>4),map.height); //TODO: Why are int and long int being compared?
-	int index = v*MAPLAYERS+u*MAPLAYERS*map.height;
+	int u = std::min(std::max<unsigned int>(0,x>>4),map.getWidth());
+	int v = std::min(std::max<unsigned int>(0,y>>4),map.getHeight()); //TODO: Why are int and long int being compared?
+	int index = v*MAPLAYERS+u*MAPLAYERS*map.getHeight();
 
-	if( map.tiles[OBSTACLELAYER+index] || !map.tiles[index] || lavatiles[map.tiles[index]] )
+	if( map.getTiles()[OBSTACLELAYER+index] || !map.getTiles()[index] || lavatiles[map.getTiles()[index]] )
 		return 1;
 
 	node_t *node;
@@ -160,14 +160,14 @@ list_t *generatePath(int x1, int y1, int x2, int y2, Entity *my, Entity *target)
 	long heaplength=0;
 	node_t *entityNode = NULL;
 
-	int *pathMap = (int *) calloc(map.width*map.height,sizeof(int));
+	int *pathMap = (int *) calloc(map.getWidth()*map.getHeight(),sizeof(int));
 
 	bool levitating=FALSE;
 
-	x1 = std::min<unsigned int>(std::max(0,x1),map.width-1);
-	y1 = std::min<unsigned int>(std::max(0,y1),map.height-1);
-	x2 = std::min<unsigned int>(std::max(0,x2),map.width-1);
-	y2 = std::min<unsigned int>(std::max(0,y2),map.height-1); //TODO: Why are int and unsigned int being compared?
+	x1 = std::min<unsigned int>(std::max(0,x1),map.getWidth()-1);
+	y1 = std::min<unsigned int>(std::max(0,y1),map.getHeight()-1);
+	x2 = std::min<unsigned int>(std::max(0,x2),map.getWidth()-1);
+	y2 = std::min<unsigned int>(std::max(0,y2),map.getHeight()-1); //TODO: Why are int and unsigned int being compared?
 	
 	// get levitation status
 	Stat *stats = my->getStats();
@@ -189,14 +189,14 @@ list_t *generatePath(int x1, int y1, int x2, int y2, Entity *my, Entity *target)
 
 	if( !loading ) {
 		if( levitating )
-			memcpy(pathMap,pathMapFlying,map.width*map.height*sizeof(int));
+			memcpy(pathMap,pathMapFlying,map.getWidth()*map.getHeight()*sizeof(int));
 		else
-			memcpy(pathMap,pathMapGrounded,map.width*map.height*sizeof(int));
+			memcpy(pathMap,pathMapGrounded,map.getWidth()*map.getHeight()*sizeof(int));
 	}
 
-	int myPathMap = pathMap[y1+x1*map.height];
+	int myPathMap = pathMap[y1+x1*map.getHeight()];
 	if( !loading ) {
-		if( !myPathMap || myPathMap!=pathMap[y2+x2*map.height] || !pathMap[y2+x2*map.height] || (x1==x2 && y1==y2) ) {
+		if( !myPathMap || myPathMap!=pathMap[y2+x2*map.getHeight()] || !pathMap[y2+x2*map.getHeight()] || (x1==x2 && y1==y2) ) {
 			free(pathMap);
 			return NULL;
 		}
@@ -212,9 +212,9 @@ list_t *generatePath(int x1, int y1, int x2, int y2, Entity *my, Entity *target)
 			continue;
 		if ( my->checkFriend(target) )
 			continue;
-		int x = std::min<unsigned int>(std::max<int>(0,entity->x/16),map.width-1); //TODO: Why are int and double being compared? And why are int and unsigned int being compared?
-		int y = std::min<unsigned int>(std::max<int>(0,entity->y/16),map.height-1); //TODO: Why are int and double being compared? And why are int and unsigned int being compared?
-		pathMap[y+x*map.height] = 0;
+		int x = std::min<unsigned int>(std::max<int>(0,entity->x/16),map.getWidth()-1); //TODO: Why are int and double being compared? And why are int and unsigned int being compared?
+		int y = std::min<unsigned int>(std::max<int>(0,entity->y/16),map.getHeight()-1); //TODO: Why are int and double being compared? And why are int and unsigned int being compared?
+		pathMap[y+x*map.getHeight()] = 0;
 	}
 		
 	openList = (list_t *) malloc(sizeof(list_t));
@@ -223,7 +223,7 @@ list_t *generatePath(int x1, int y1, int x2, int y2, Entity *my, Entity *target)
 	closedList = (list_t *) malloc(sizeof(list_t));
 	closedList->first = NULL;
 	closedList->last = NULL;
-	binaryheap = (pathnode_t **) malloc(sizeof(pathnode_t *)*map.width*map.height);
+	binaryheap = (pathnode_t **) malloc(sizeof(pathnode_t *)*map.getWidth()*map.getHeight());
 	binaryheap[0] = NULL;
 	
 	// create starting node in list
@@ -280,12 +280,12 @@ list_t *generatePath(int x1, int y1, int x2, int y2, Entity *my, Entity *target)
 					continue;
 				z = 0;
 				if( !loading ) {
-					if( !pathMap[(pathnode->y+y)+(pathnode->x+x)*map.height] )
+					if( !pathMap[(pathnode->y+y)+(pathnode->x+x)*map.getHeight()] )
 						z++;
 					if( x&&y ) {
-						if( !pathMap[(pathnode->y)+(pathnode->x+x)*map.height] )
+						if( !pathMap[(pathnode->y)+(pathnode->x+x)*map.getHeight()] )
 							z++;
-						if( !pathMap[(pathnode->y+y)+(pathnode->x)*map.height] )
+						if( !pathMap[(pathnode->y+y)+(pathnode->x)*map.getHeight()] )
 							z++;
 					}
 				} else {
@@ -371,18 +371,18 @@ void generatePathMaps() {
 
 	if( pathMapGrounded )
 		free(pathMapGrounded);
-	pathMapGrounded = (int *) calloc(map.width*map.height,sizeof(int));
+	pathMapGrounded = (int *) calloc(map.getWidth()*map.getHeight(),sizeof(int));
 	if( pathMapFlying )
 		free(pathMapFlying);
-	pathMapFlying = (int *) calloc(map.width*map.height,sizeof(int));
+	pathMapFlying = (int *) calloc(map.getWidth()*map.getHeight(),sizeof(int));
 
 	pathMapZone = 1;
-	for( y=0; y<map.height; y++ ) {
-		for( x=0; x<map.width; x++ ) {
-			if( !pathMapGrounded[y+x*map.height] ) {
+	for( y=0; y<map.getHeight(); y++ ) {
+		for( x=0; x<map.getWidth(); x++ ) {
+			if( !pathMapGrounded[y+x*map.getHeight()] ) {
 				fillPathMap(pathMapGrounded,x,y,pathMapZone);
 			}
-			if( !pathMapFlying[y+x*map.height] ) {
+			if( !pathMapFlying[y+x*map.getHeight()] ) {
 				fillPathMap(pathMapFlying,x,y,pathMapZone);
 			}
 		}
@@ -392,10 +392,10 @@ void generatePathMaps() {
 void fillPathMap(int *pathMap, int x, int y, int zone) {
 	bool obstacle = TRUE;
 
-	int index = y*MAPLAYERS+x*MAPLAYERS*map.height;
-	if( !map.tiles[OBSTACLELAYER+index] && map.tiles[index] && !animatedtiles[map.tiles[index]] ) {
+	int index = y*MAPLAYERS+x*MAPLAYERS*map.getHeight();
+	if( !map.getTiles()[OBSTACLELAYER+index] && map.getTiles()[index] && !animatedtiles[map.getTiles()[index]] ) {
 		obstacle = FALSE;
-	} else if( pathMap==pathMapFlying && !map.tiles[OBSTACLELAYER+index] ) {
+	} else if( pathMap==pathMapFlying && !map.getTiles()[OBSTACLELAYER+index] ) {
 		obstacle = FALSE;
 	}
 	if( obstacle==FALSE ) {
@@ -422,17 +422,17 @@ void fillPathMap(int *pathMap, int x, int y, int zone) {
 	if( obstacle )
 		return;
 	
-	pathMap[y+x*map.height] = zone;
+	pathMap[y+x*map.getHeight()] = zone;
 	bool repeat;
 	do {
 		repeat = FALSE;
 
 		int u, v;
-		for( u=0; u<map.width; u++ ) {
-			for( v=0; v<map.height; v++ ) {
-				if( pathMap[v+u*map.height]==zone ) {
-					if( u < map.width-1 ) {
-						if( !pathMap[v+(u+1)*map.height] ) {
+		for( u=0; u<map.getWidth(); u++ ) {
+			for( v=0; v<map.getHeight(); v++ ) {
+				if( pathMap[v+u*map.getHeight()]==zone ) {
+					if( u < map.getWidth()-1 ) {
+						if( !pathMap[v+(u+1)*map.getHeight()] ) {
 							bool foundObstacle=FALSE;
 							bool foundWallModifier=FALSE;
 							list_t *list = checkTileForEntity(u+1,v);
@@ -451,23 +451,23 @@ void fillPathMap(int *pathMap, int x, int y, int zone) {
 									}
 								}
 								if( foundWallModifier ) {
-									pathMap[v+(u+1)*map.height] = zone;
+									pathMap[v+(u+1)*map.getHeight()] = zone;
 									repeat = TRUE;
 								}
 								list_FreeAll(list);
 								free(list);
 							}
 							if( !foundWallModifier && !foundObstacle ) {
-								int index = v*MAPLAYERS+(u+1)*MAPLAYERS*map.height;
-								if( !map.tiles[OBSTACLELAYER+index] && (pathMap==pathMapFlying || (map.tiles[index] && !animatedtiles[map.tiles[index]])) ) {
-									pathMap[v+(u+1)*map.height] = zone;
+								int index = v*MAPLAYERS+(u+1)*MAPLAYERS*map.getHeight();
+								if( !map.getTiles()[OBSTACLELAYER+index] && (pathMap==pathMapFlying || (map.getTiles()[index] && !animatedtiles[map.getTiles()[index]])) ) {
+									pathMap[v+(u+1)*map.getHeight()] = zone;
 									repeat = TRUE;
 								}
 							}
 						}
 					}
 					if( u > 0 ) {
-						if( !pathMap[v+(u-1)*map.height] ) {
+						if( !pathMap[v+(u-1)*map.getHeight()] ) {
 							bool foundObstacle=FALSE;
 							bool foundWallModifier=FALSE;
 							list_t *list = checkTileForEntity(u-1,v);
@@ -486,23 +486,23 @@ void fillPathMap(int *pathMap, int x, int y, int zone) {
 									}
 								}
 								if( foundWallModifier ) {
-									pathMap[v+(u-1)*map.height] = zone;
+									pathMap[v+(u-1)*map.getHeight()] = zone;
 									repeat = TRUE;
 								}
 								list_FreeAll(list);
 								free(list);
 							}
 							if( !foundWallModifier && !foundObstacle ) {
-								int index = v*MAPLAYERS+(u-1)*MAPLAYERS*map.height;
-								if( !map.tiles[OBSTACLELAYER+index] && (pathMap==pathMapFlying || (map.tiles[index] && !animatedtiles[map.tiles[index]])) ) {
-									pathMap[v+(u-1)*map.height] = zone;
+								int index = v*MAPLAYERS+(u-1)*MAPLAYERS*map.getHeight();
+								if( !map.getTiles()[OBSTACLELAYER+index] && (pathMap==pathMapFlying || (map.getTiles()[index] && !animatedtiles[map.getTiles()[index]])) ) {
+									pathMap[v+(u-1)*map.getHeight()] = zone;
 									repeat = TRUE;
 								}
 							}
 						}
 					}
-					if( v < map.height-1 ) {
-						if( !pathMap[(v+1)+u*map.height] ) {
+					if( v < map.getHeight()-1 ) {
+						if( !pathMap[(v+1)+u*map.getHeight()] ) {
 							bool foundObstacle=FALSE;
 							bool foundWallModifier=FALSE;
 							list_t *list = checkTileForEntity(u,v+1);
@@ -521,23 +521,23 @@ void fillPathMap(int *pathMap, int x, int y, int zone) {
 									}
 								}
 								if( foundWallModifier ) {
-									pathMap[(v+1)+u*map.height] = zone;
+									pathMap[(v+1)+u*map.getHeight()] = zone;
 									repeat = TRUE;
 								}
 								list_FreeAll(list);
 								free(list);
 							}
 							if( !foundWallModifier && !foundObstacle ) {
-								int index = (v+1)*MAPLAYERS+u*MAPLAYERS*map.height;
-								if( !map.tiles[OBSTACLELAYER+index] && (pathMap==pathMapFlying || (map.tiles[index] && !animatedtiles[map.tiles[index]])) ) {
-									pathMap[(v+1)+u*map.height] = zone;
+								int index = (v+1)*MAPLAYERS+u*MAPLAYERS*map.getHeight();
+								if( !map.getTiles()[OBSTACLELAYER+index] && (pathMap==pathMapFlying || (map.getTiles()[index] && !animatedtiles[map.getTiles()[index]])) ) {
+									pathMap[(v+1)+u*map.getHeight()] = zone;
 									repeat = TRUE;
 								}
 							}
 						}
 					}
 					if( v > 0 ) {
-						if( !pathMap[(v-1)+u*map.height] ) {
+						if( !pathMap[(v-1)+u*map.getHeight()] ) {
 							bool foundObstacle=FALSE;
 							bool foundWallModifier=FALSE;
 							list_t *list = checkTileForEntity(u,v-1);
@@ -556,16 +556,16 @@ void fillPathMap(int *pathMap, int x, int y, int zone) {
 									}
 								}
 								if( foundWallModifier ) {
-									pathMap[(v-1)+u*map.height] = zone;
+									pathMap[(v-1)+u*map.getHeight()] = zone;
 									repeat = TRUE;
 								}
 								list_FreeAll(list);
 								free(list);
 							}
 							if( !foundWallModifier && !foundObstacle ) {
-								int index = (v-1)*MAPLAYERS+u*MAPLAYERS*map.height;
-								if( !map.tiles[OBSTACLELAYER+index] && (pathMap==pathMapFlying || (map.tiles[index] && !animatedtiles[map.tiles[index]])) ) {
-									pathMap[(v-1)+u*map.height] = zone;
+								int index = (v-1)*MAPLAYERS+u*MAPLAYERS*map.getHeight();
+								if( !map.getTiles()[OBSTACLELAYER+index] && (pathMap==pathMapFlying || (map.getTiles()[index] && !animatedtiles[map.getTiles()[index]])) ) {
+									pathMap[(v-1)+u*map.getHeight()] = zone;
 									repeat = TRUE;
 								}
 							}

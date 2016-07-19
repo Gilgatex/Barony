@@ -58,8 +58,8 @@ void actGib(Entity *my) {
 		my->z += GIB_VELZ;
 		my->roll += 0.1;
 	} else {
-		if( my->x >= 0 && my->y >= 0 && my->x < map.width<<4 && my->y < map.height<<4 ) {
-			if( !map.tiles[(int)(floor(my->y/16)*MAPLAYERS+floor(my->x/16)*MAPLAYERS*map.height)] ) {
+		if( my->x >= 0 && my->y >= 0 && my->x < map.getWidth()<<4 && my->y < map.getHeight()<<4 ) {
+			if( !map.getTiles()[(int)(floor(my->y/16)*MAPLAYERS+floor(my->x/16)*MAPLAYERS*map.getHeight())] ) {
 				GIB_VELZ += GIB_GRAVITY;
 				my->z += GIB_VELZ;
 				my->roll += 0.1;

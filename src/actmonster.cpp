@@ -862,11 +862,11 @@ void actMonster(Entity *my) {
 		
 		// drop gold
 		if( myStats->GOLD > 0 ) {
-			int x = std::min<int>(std::max(0,(int)(my->x/16)),map.width-1);
-			int y = std::min<int>(std::max(0,(int)(my->y/16)),map.height-1);
+			int x = std::min<int>(std::max(0,(int)(my->x/16)),map.getWidth()-1);
+			int y = std::min<int>(std::max(0,(int)(my->y/16)),map.getHeight()-1);
 
 			// check for floor to drop gold...
-			if( map.tiles[y*MAPLAYERS+x*MAPLAYERS*map.height] ) {
+			if( map.getTiles()[y*MAPLAYERS+x*MAPLAYERS*map.getHeight()] ) {
 				entity = newEntity(130,0,map.entities); // 130 = goldbag model
 				entity->sizex = 4;
 				entity->sizey = 4;
@@ -1554,15 +1554,15 @@ void actMonster(Entity *my) {
 				MONSTER_MOVETIME = rand()%30;
 				int goodspots=0;
 				if( myStats->type != SHOPKEEPER ) {
-					for( x=0; x<map.width; x++ ) {
-						for( y=0; y<map.height; y++ ) {
+					for( x=0; x<map.getWidth(); x++ ) {
+						for( y=0; y<map.getHeight(); y++ ) {
 							if( !checkObstacle(x<<4,y<<4,my,NULL) )
 								goodspots++;
 						}
 					}
 				} else {
-					for( x=0; x<map.width; x++ ) {
-						for( y=0; y<map.height; y++ ) {
+					for( x=0; x<map.getWidth(); x++ ) {
+						for( y=0; y<map.getHeight(); y++ ) {
 							if( x<<4 >= MONSTER_SHOPXS && x<<4 <= MONSTER_SHOPXE && y<<4 >= MONSTER_SHOPYS && y<<4 <= MONSTER_SHOPYE )
 								if( !checkObstacle(x<<4,y<<4,my,NULL) )
 									goodspots++;
@@ -1575,8 +1575,8 @@ void actMonster(Entity *my) {
 					bool foundit = FALSE;
 					x=0; y=0;
 					if( myStats->type != SHOPKEEPER ) {
-						for( x=0; x<map.width; x++ ) {
-							for( y=0; y<map.height; y++ ) {
+						for( x=0; x<map.getWidth(); x++ ) {
+							for( y=0; y<map.getHeight(); y++ ) {
 								if( !checkObstacle(x<<4,y<<4,my,NULL) ) {
 									if( currentspot==chosenspot ) {
 										foundit=TRUE;
@@ -1590,8 +1590,8 @@ void actMonster(Entity *my) {
 								break;
 						}
 					} else {
-						for( x=0; x<map.width; x++ ) {
-							for( y=0; y<map.height; y++ ) {
+						for( x=0; x<map.getWidth(); x++ ) {
+							for( y=0; y<map.getHeight(); y++ ) {
 								if( x<<4 >= MONSTER_SHOPXS && x<<4 <= MONSTER_SHOPXE && y<<4 >= MONSTER_SHOPYS && y<<4 <= MONSTER_SHOPYE ) {
 									if( !checkObstacle(x<<4,y<<4,my,NULL) ) {
 										if( currentspot==chosenspot ) {
@@ -1885,9 +1885,9 @@ void actMonster(Entity *my) {
 							
 							// bust ceilings
 							/*if( myStats->type == MINOTAUR ) {
-								if( my->x>=0 && my->y>=0 && my->x<map.width<<4 && my->y<map.height<<4 ) {
-									if( map.tiles[MAPLAYERS+(int)(my->y/16)*MAPLAYERS+(int)(my->x/16)*MAPLAYERS*map.height] )
-										map.tiles[MAPLAYERS+(int)(my->y/16)*MAPLAYERS+(int)(my->x/16)*MAPLAYERS*map.height] = 0;
+								if( my->x>=0 && my->y>=0 && my->x<map.getWidth()<<4 && my->y<map.getHeight()<<4 ) {
+									if( map.getTiles()[MAPLAYERS+(int)(my->y/16)*MAPLAYERS+(int)(my->x/16)*MAPLAYERS*map.getHeight()] )
+										map.getTiles()[MAPLAYERS+(int)(my->y/16)*MAPLAYERS+(int)(my->x/16)*MAPLAYERS*map.getHeight()] = 0;
 								}
 							}*/
 						

@@ -181,12 +181,9 @@ int Map::loadMap(string filename2, list_t* entlist) {
 		}
 
 		// shoparea
-		if (shoparea)
-			free(shoparea);
-		shoparea = (bool *)malloc(sizeof(bool)*this->width*this->height);
 		for (x = 0; x<this->width; x++)
 			for (y = 0; y<this->height; y++)
-				shoparea[y + x*this->height] = FALSE;
+				shoparea[x][y] = FALSE;
 
 		for (c = 0; c<512; c++)
 			keystatus[c] = 0;
@@ -197,6 +194,11 @@ int Map::loadMap(string filename2, list_t* entlist) {
 
 void Map::addEntity(Entity * entity) {
 	this->entities.push_back(entity);
+}
+
+void Map::removeEntity(Entity * entity)
+{
+	this->entities.remove(entity);
 }
 
 Entity *Map::getEntityAt(int index) {
@@ -214,8 +216,24 @@ void Map::addDoor(Door * door) {
 	this->doors.push_back(door);
 }
 
+list<Door*> Map::getDoors() {
+	return this->doors;
+}
+
 Door::Door(Sint32 x, Sint32 y, Sint32 dir) {
 	this->x = x;
 	this->y = y;
 	this->dir = dir;
+}
+
+Sint32 Door::getX() {
+	return this->x;
+}
+
+Sint32 Door::getY() {
+	return this->y;
+}
+
+Sint32 Door::getDir() {
+	return this->dir;
 }

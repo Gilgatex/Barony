@@ -303,6 +303,7 @@ int generateDungeon(string levelset, Uint32 seed) {
 	vector< vector<bool> > possiblelocations(map.getWidth(), vector<bool>(map.getHeight()));
 	vector< vector<bool> > possiblelocations2(map.getWidth(), vector<bool>(map.getHeight()));
 	vector< bool > possiblerooms(map.getWidth()*map.getHeight());
+	vector< vector<bool> > firstroomtile(map.getWidth(), vector<bool>(map.getHeight()));
 	if( numlevels > 1 ) {
 		for( y=0; y<map.getHeight(); y++ ) {
 			for( x=0; x<map.getWidth(); x++ ) {
@@ -438,7 +439,6 @@ int generateDungeon(string levelset, Uint32 seed) {
 			}
 			
 			// now copy all the geometry from the sublevel to the chosen location
-			vector< vector<bool> > firstroomtile(map.getWidth(), vector<bool>(map.getHeight()));
 			if( c==0 )
 				for (y = 0; y<map.getHeight(); y++) 
 					for (x = 0; x<map.getWidth(); x++) 
@@ -447,7 +447,6 @@ int generateDungeon(string levelset, Uint32 seed) {
 			for( z=0; z<MAPLAYERS; z++ ) {
 				for( y0=y; y0<y1; y0++ ) {
 					for( x0=x; x0<x1; x0++ ) {
-						//TODO use the new vector array here.
 						map.setTile(x0, y0, z, tempMap->getTile(x0 - x, y0 - y, z));
 						if( z==0 ) {
 							possiblelocations[x0][y0]=FALSE;
@@ -460,60 +459,43 @@ int generateDungeon(string levelset, Uint32 seed) {
 							}
 						}
 						// remove any existing entities in this region too
-						for( node=map.entities->first; node!=NULL; node=nextnode ) {
-							nextnode = node->next;
-							Entity *entity = (Entity *)node->element;
-							if( (int)entity->x == x0<<4 && (int)entity->y == y0<<4 )
-								list_RemoveNode(entity->mynode);
+						for (list<Entity *>::iterator node = map.getEntities().begin(); node != map.getEntities().end(); ++node) {
+							Entity *entity = *node;
+							if ((int)entity->x == x0 << 4 && (int)entity->y == y0 << 4) {
+								--node; // Need to go back one in our linked list since we are going to delete the current entity
+								map.removeEntity(entity);
+							}
 						}
 					}
 				}
 			}
 			
-			// copy the entities as well
-			for( node=tempMap->entities->first; node!=NULL; node=node->next ) {
-				entity = (Entity *)node->element;
-				childEntity = newEntity(entity->sprite,1,map.entities);
-				childEntity->x = entity->x+x*16;
-				childEntity->y = entity->y+y*16;
-				//printlog("1 Generated entity. Sprite: %d Uid: %d X: %.2f Y: %.2f\n",childEntity->sprite,childEntity->uid,childEntity->x,childEntity->y);
+			// copy the entities from tempMap to map as well
+			for (list<Entity *>::iterator node = tempMap->getEntities().begin(); node != tempMap->getEntities().end(); ++node) {
+				entity = *node;
+				childEntity = new Entity(entity->sprite, 1);
+				childEntity->x = entity->x + x * 16;
+				childEntity->y = entity->y + y * 16;
+				map.addEntity(childEntity);
 			}
 			
-			// finally, copy the doors into a single doors list
-			while(doorNode!=NULL) {
-				door=(door_t *)doorNode->element;
-				newDoor = (door_t *) malloc(sizeof(door_t));
-				newDoor->x = door->x+x;
-				newDoor->y = door->y+y;
-				newDoor->dir = door->dir;
-				node = list_AddNodeLast(&doorList);
-				node->element = newDoor;
-				node->deconstructor = &defaultDeconstructor;
-				doorNode=doorNode->next;
+			// finally, copy the doors from the tempMap into the main map's door list
+			list<Door *> doors = tempMap->getDoors();
+			for (list<Door *>::iterator node = tempMap->getDoors().begin(); node != tempMap->getDoors().end(); ++node) {
+				Door *door = *node;
+				map.addDoor(door);
 			}
-			
+
 			// free shop map if used
 			if( shoplevel && c==2 ) {
-				list_FreeAll(shopmap.entities);
-				free(shopmap.entities);
-				if( shopmap.getTiles() )
-					free(shopmap.getTiles());
+				delete(shopmap);
 			}
 			if( secretlevelexit && c==1 ) {
-				list_FreeAll(secretlevelmap.entities);
-				free(secretlevelmap.entities);
-				if( secretlevelmap.getTiles() )
-					free(secretlevelmap.getTiles());
+				delete(secretlevelmap);
 			}
 			roomcount++;
 		}
-		free(possiblerooms);
-		free(possiblelocations2);
 	} else {
-		free(sublevelname);
-		free(fullname);
-		list_FreeAll(&mapList);
-		list_FreeAll(&doorList);
 		printlog("error: not enough levels to begin generating dungeon.\n");
 		return -1;
 	}
@@ -521,100 +503,124 @@ int generateDungeon(string levelset, Uint32 seed) {
 	// post-processing:
 	
 	// doors
-	for( node=doorList.first; node!=NULL; node=node->next ) {
-		door = (door_t *)node->element;
-		for(node2=map.entities->first; node2!=NULL; node2=node2->next) {
-			entity = (Entity *)node2->element;
-			if( entity->x/16==door->x && entity->y/16==door->y && (entity->sprite==2 || entity->sprite==3) ) {
-				switch( door->dir ) {
+	for (list<Door *>::iterator node = map.getDoors().begin(); node != map.getDoors().end(); ++node) {
+		door = *node;
+		for (list<Entity *>::iterator node2 = map.getEntities().begin(); node2 != map.getEntities().end(); ++node2) {
+			entity = *node2;
+			if( entity->x/16==door->getX() && entity->y/16==door->getY() && (entity->sprite==2 || entity->sprite==3) ) {
+				switch (door->getDir()) {
 					case 0: // east
-						map.getTiles()[OBSTACLELAYER+door->y*MAPLAYERS+(door->x+1)*MAPLAYERS*map.getHeight()]=0;
-						for( node3=map.entities->first; node3!=NULL; node3=nextnode ) {
-							entity = (Entity *)node3->element;
-							nextnode=node3->next;
-							if( entity->sprite==2 || entity->sprite==3 ) {
-								if( (int)(entity->x/16)==door->x+2 && (int)(entity->y/16)==door->y ) {
-									list_RemoveNode(entity->mynode);
+						map.setTile(door->getX() + 1, y, OBSTACLELAYER, 0);
+						for (list<Entity *>::iterator node3 = map.getEntities().begin(); node3 != map.getEntities().end(); ++node3) {
+							entity = *node3;
+							if (entity->sprite == 2 || entity->sprite == 3) {
+								if ((int)(entity->x / 16) == door->getX() + 2 && (int)(entity->y / 16) == door->getY()) {
+									map.removeEntity(entity);
+									--node3;
 									break;
-								} else if( (int)(entity->x/16)==door->x+1 && (int)(entity->y/16)==door->y ) {
-									list_RemoveNode(entity->mynode);
+								}
+								else if ((int)(entity->x / 16) == door->getX() + 1 && (int)(entity->y / 16) == door->getY()) {
+									map.removeEntity(entity);
+									--node3;
 									break;
-								} else if( (int)(entity->x/16)==door->x+1 && (int)(entity->y/16)==door->y+1 ) {
-									list_RemoveNode(entity->mynode);
+								}
+								else if ((int)(entity->x / 16) == door->getX() + 1 && (int)(entity->y / 16) == door->getY() + 1) {
+									map.removeEntity(entity);
+									--node3;
 									break;
-								} else if( (int)(entity->x/16)==door->x+1 && (int)(entity->y/16)==door->y-1 ) {
-									list_RemoveNode(entity->mynode);
+								}
+								else if ((int)(entity->x / 16) == door->getX() + 1 && (int)(entity->y / 16) == door->getY() - 1) {
+									map.removeEntity(entity);
+									--node3;
 									break;
 								}
 							}
 						}
 						break;
 					case 1: // south
-						map.getTiles()[OBSTACLELAYER+(door->y+1)*MAPLAYERS+door->x*MAPLAYERS*map.getHeight()]=0;
-						for( node3=map.entities->first; node3!=NULL; node3=nextnode ) {
-							entity = (Entity *)node3->element;
-							nextnode=node3->next;
-							if( entity->sprite==2 || entity->sprite==3 ) {
-								if( (int)(entity->x/16)==door->x && (int)(entity->y/16)==door->y+2 ) {
-									list_RemoveNode(entity->mynode);
+						map.setTile(door->getX(), door->getY() + 1, OBSTACLELAYER, 0);
+						for (list<Entity *>::iterator node3 = map.getEntities().begin(); node3 != map.getEntities().end(); ++node3) {
+							entity = *node3;
+							if (entity->sprite == 2 || entity->sprite == 3) {
+								if ((int)(entity->x / 16) == door->getX() && (int)(entity->y / 16) == door->getY() + 2) {
+									map.removeEntity(entity);
+									--node3;
 									break;
-								} else if( (int)(entity->x/16)==door->x && (int)(entity->y/16)==door->y+1 ) {
-									list_RemoveNode(entity->mynode);
+								}
+								else if ((int)(entity->x / 16) == door->getX() && (int)(entity->y / 16) == door->getY() + 1) {
+									map.removeEntity(entity);
+									--node3;
 									break;
-								} else if( (int)(entity->x/16)==door->x+1 && (int)(entity->y/16)==door->y+1 ) {
-									list_RemoveNode(entity->mynode);
+								}
+								else if ((int)(entity->x / 16) == door->getX() + 1 && (int)(entity->y / 16) == door->getY() + 1) {
+									map.removeEntity(entity);
+									--node3;
 									break;
-								} else if( (int)(entity->x/16)==door->x-1 && (int)(entity->y/16)==door->y+1 ) {
-									list_RemoveNode(entity->mynode);
+								}
+								else if ((int)(entity->x / 16) == door->getX() - 1 && (int)(entity->y / 16) == door->getY() + 1) {
+									map.removeEntity(entity);
+									--node3;
 									break;
 								}
 							}
 						}
 						break;
 					case 2: // west
-						map.getTiles()[OBSTACLELAYER+door->y*MAPLAYERS+(door->x-1)*MAPLAYERS*map.getHeight()]=0;
-						for( node3=map.entities->first; node3!=NULL; node3=nextnode ) {
-							entity = (Entity *)node3->element;
-							nextnode=node3->next;
-							if( entity->sprite==2 || entity->sprite==3 ) {
-								if( (int)(entity->x/16)==door->x-2 && (int)(entity->y/16)==door->y ) {
-									list_RemoveNode(entity->mynode);
+						map.setTile(door->getX() - 1, door->getY(), OBSTACLELAYER, 0);
+						for (list<Entity *>::iterator node3 = map.getEntities().begin(); node3 != map.getEntities().end(); ++node3) {
+							entity = *node3;
+							if (entity->sprite == 2 || entity->sprite == 3) {
+								if ((int)(entity->x / 16) == door->getX() - 2 && (int)(entity->y / 16) == door->getY()) {
+									map.removeEntity(entity);
+									--node3;
 									break;
-								} else if( (int)(entity->x/16)==door->x-1 && (int)(entity->y/16)==door->y ) {
-									list_RemoveNode(entity->mynode);
+								}
+								else if ((int)(entity->x / 16) == door->getX() - 1 && (int)(entity->y / 16) == door->getY()) {
+									map.removeEntity(entity);
+									--node3;
 									break;
-								} else if( (int)(entity->x/16)==door->x-1 && (int)(entity->y/16)==door->y+1 ) {
-									list_RemoveNode(entity->mynode);
+								}
+								else if ((int)(entity->x / 16) == door->getX() - 1 && (int)(entity->y / 16) == door->getY() + 1) {
+									map.removeEntity(entity);
+									--node3;
 									break;
-								} else if( (int)(entity->x/16)==door->x-1 && (int)(entity->y/16)==door->y-1 ) {
-									list_RemoveNode(entity->mynode);
+								}
+								else if ((int)(entity->x / 16) == door->getX() - 1 && (int)(entity->y / 16) == door->getY() - 1) {
+									map.removeEntity(entity);
+									--node3;
 									break;
 								}
 							}
 						}
 						break;
 					case 3: // north
-						map.getTiles()[OBSTACLELAYER+(door->y-1)*MAPLAYERS+door->x*MAPLAYERS*map.getHeight()]=0;
-						for( node3=map.entities->first; node3!=NULL; node3=nextnode ) {
-							entity = (Entity *)node3->element;
-							nextnode=node3->next;
-							if( entity->sprite==2 || entity->sprite==3 ) {
-								if( (int)(entity->x/16)==door->x && (int)(entity->y/16)==door->y-2 ) {
-									list_RemoveNode(entity->mynode);
+						map.setTile(door->getX(), door->getY() - 1, OBSTACLELAYER, 0);
+						for (list<Entity *>::iterator node3 = map.getEntities().begin(); node3 != map.getEntities().end(); ++node3) {
+							entity = *node3;
+							if (entity->sprite == 2 || entity->sprite == 3) {
+								if ((int)(entity->x / 16) == door->getX() && (int)(entity->y / 16) == door->getY() - 2) {
+									map.removeEntity(entity);
+									--node3;
 									break;
-								} else if( (int)(entity->x/16)==door->x && (int)(entity->y/16)==door->y-1 ) {
-									list_RemoveNode(entity->mynode);
+								}
+								else if ((int)(entity->x / 16) == door->getX() && (int)(entity->y / 16) == door->getY() - 1) {
+									map.removeEntity(entity);
+									--node3;
 									break;
-								} else if( (int)(entity->x/16)==door->x+1 && (int)(entity->y/16)==door->y-1 ) {
-									list_RemoveNode(entity->mynode);
+								}
+								else if ((int)(entity->x / 16) == door->getX() + 1 && (int)(entity->y / 16) == door->getY() - 1) {
+									map.removeEntity(entity);
+									--node3;
 									break;
-								} else if( (int)(entity->x/16)==door->x-1 && (int)(entity->y/16)==door->y-1 ) {
-									list_RemoveNode(entity->mynode);
+								}
+								else if ((int)(entity->x / 16) == door->getX() - 1 && (int)(entity->y / 16) == door->getY() - 1) {
+									map.removeEntity(entity);
+									--node3;
 									break;
 								}
 							}
 						}
-						break;
+					default: break;
 				}
 			}
 		}
@@ -623,36 +629,36 @@ int generateDungeon(string levelset, Uint32 seed) {
 	// boulder and arrow traps
 	if( svFlags&SV_FLAG_TRAPS ) {
 		numpossiblelocations=0;
-		for( c=0; c<map.getWidth()*map.getHeight(); c++ )
-			possiblelocations[c] = FALSE;
+		for (x = 0; x<map.getWidth(); x++)
+			for (y = 0; y<map.getWidth(); y++)
+				possiblelocations[x][y] = FALSE;
 		for( y=1; y<map.getHeight()-1; y++ ) {
 			for( x=1; x<map.getWidth()-1; x++ ) {
 				int sides=0;
-				if( firstroomtile[y+x*map.getHeight()] )
+				if( firstroomtile[x][y] )
 					continue;
-				if( !map.getTiles()[OBSTACLELAYER+y*MAPLAYERS+(x+1)*MAPLAYERS*map.getHeight()] )
+				if( !map.getTile[x+1][y][OBSTACLELAYER])
 					sides++;
-				if( !map.getTiles()[OBSTACLELAYER+(y+1)*MAPLAYERS+x*MAPLAYERS*map.getHeight()] )
+				if (!map.getTile[x][y+1][OBSTACLELAYER])
 					sides++;
-				if( !map.getTiles()[OBSTACLELAYER+y*MAPLAYERS+(x-1)*MAPLAYERS*map.getHeight()] )
+				if (!map.getTile[x-1][y][OBSTACLELAYER])
 					sides++;
-				if( !map.getTiles()[OBSTACLELAYER+(y-1)*MAPLAYERS+x*MAPLAYERS*map.getHeight()] )
+				if (!map.getTile[x][y-1][OBSTACLELAYER])
 					sides++;
 				if( sides==1 ) {
-					possiblelocations[y+x*map.getHeight()]=TRUE;
+					possiblelocations[x][y]=TRUE;
 					numpossiblelocations++;
 				}
 			}
 		}
 
 		// don't spawn traps in doors
-		node_t *doorNode;
-		for( doorNode=doorList.first; doorNode!=NULL; doorNode=doorNode->next ) {
-			door_t *door = (door_t *)doorNode->element;
-			int x = std::min<unsigned int>(std::max(0,door->x),map.getWidth()); //TODO: Why are const int and unsigned int being compared?
-			int y = std::min<unsigned int>(std::max(0,door->y),map.getHeight()); //TODO: Why are const int and unsigned int being compared?
-			if( possiblelocations[y+x*map.getHeight()]==TRUE ) {
-				possiblelocations[y+x*map.getHeight()]=FALSE;
+		for (list<Door *>::iterator node = map.getDoors().begin(); node != map.getDoors().end(); ++node) {
+			Door *door = *node;
+			int x = std::min<unsigned int>(std::max(0,door->getX()),map.getWidth()); //TODO: Why are const int and unsigned int being compared?
+			int y = std::min<unsigned int>(std::max(0,door->getY()),map.getHeight()); //TODO: Why are const int and unsigned int being compared?
+			if( possiblelocations[x][y]==TRUE ) {
+				possiblelocations[x][y]=FALSE;
 				numpossiblelocations--;
 			}
 		}

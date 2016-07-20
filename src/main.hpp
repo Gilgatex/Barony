@@ -452,7 +452,7 @@ extern bool *animatedtiles, *lavatiles;
 extern char tempstr[1024];
 extern Sint8 minimap[64][64];
 extern Uint32 mapseed;
-extern bool *shoparea;
+extern vector <vector<Sint32>> shoparea;
 
 // function prototypes for main.c:
 int sgn(double x);

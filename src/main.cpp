@@ -109,7 +109,7 @@ voxel_t **models = NULL;
 list_t button_l;
 list_t light_l;
 Uint32 mapseed;
-bool *shoparea = NULL;
+vector <vector<Sint32>> shoparea;
 
 // game variables
 Entity* openedChest[4] = { NULL };

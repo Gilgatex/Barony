@@ -35,8 +35,10 @@ class Map {
 		int loadMap(string filename2);
 		int loadMap(string filename2, list_t* entlist);
 		void addEntity(Entity *);
+		void removeEntity(Entity *);
 		Entity * getEntityAt(int index);
 		void addDoor(Door *);
+		list<Door*> getDoors();
 };
 
 // Door class (used in map generation)
@@ -46,4 +48,7 @@ class Door {
 		Sint32 dir; // 0: east, 1: south, 2: west, 3: north
 	public:
 		Door(Sint32 x, Sint32 y, Sint32 dir);
+		Sint32 getX();
+		Sint32 getY();
+		Sint32 getDir();
 };

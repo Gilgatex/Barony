@@ -18,17 +18,19 @@ class Map {
 		char name[32];   // name of the map
 		char author[32]; // author of the map
 		unsigned int width, height;  // size of the map
-		Sint32 *tiles;
+		vector<vector<vector<Sint32>>> tiles;
 		list<Entity *> entities;
 		list<Door *> doors;
 
 	public:
 		Map();
+		~Map();
 		string getName();
 		string getAuthor();
 		unsigned int getWidth();
 		unsigned int getHeight();
-		Sint32 *getTiles();
+		Sint32 getTile(int x, int y, int z);
+		void setTile(int x, int y, int z, Sint32 value);
 		list<Entity*> getEntities();
 		int loadMap(string filename2);
 		int loadMap(string filename2, list_t* entlist);

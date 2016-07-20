@@ -1,6 +1,12 @@
 #include "map.hpp";
 #include "sound.hpp";
 
+Map::Map() {
+}
+
+Map::~Map() {
+}
+
 string Map::getName() {
 	return this->name;
 }
@@ -17,17 +23,17 @@ unsigned int Map::getHeight() {
 	return this->height;
 }
 
-Sint32 *Map::getTiles() {
-	return this->tiles;
+Sint32 Map::getTile(int x, int y, int z) {
+	return this->tiles[x][y][z];
+}
+
+void Map::setTile(int x, int y, int z, Sint32 value) {
+	this->tiles[x][y][z] = value;
 }
 
 list<Entity*> Map::getEntities()
 {
-	return entities;
-}
-
-Map::Map() {
-	this->tiles = NULL;
+	return this->entities;
 }
 
 /*-------------------------------------------------------------------------------
@@ -68,29 +74,29 @@ int Map::loadMap(string filename2, list_t* entlist) {
 			// load the file!
 			if ((fp = fopen(filename.c_str(), "rb")) == NULL) {
 				printlog("warning: failed to open file '%s' for map loading!\n", filename);
-				if (game) {
+				/*if (game) {
 					printlog("error: main map failed to load, aborting.\n");
 					mainloop = 0;
-				}
+				}*/
 				return -1;
 			}
 		}
 		else {
 			printlog("warning: failed to open file '%s' for map loading!\n", filename);
-			if (game) {
+			/*if (game) {
 				printlog("error: main map failed to load, aborting.\n");
 				mainloop = 0;
-			}
+			}*/
 			return -1;
 		}
 		fread(valid_data, sizeof(char), strlen("BARONY"), fp);
 		if (strncmp(valid_data, "BARONY", strlen("BARONY"))) {
 			printlog("warning: file '%s' is an invalid map file.\n", filename);
 			fclose(fp);
-			if (game) {
+			/*if (game) {
 				printlog("error: main map failed to load, aborting.\n");
 				mainloop = 0;
-			}
+			}*/
 			return -1;
 		}
 		// remove all the entities
@@ -100,14 +106,23 @@ int Map::loadMap(string filename2, list_t* entlist) {
 		// remove old lights
 		list_FreeAll(&light_l);
 
-		if (this->tiles != NULL)
-			free(this->tiles);
 		fread(this->name, sizeof(char), 32, fp); // map name
 		fread(this->author, sizeof(char), 32, fp); // map author
 		fread(&this->width, sizeof(Uint32), 1, fp); // map.getWidth()
 		fread(&this->height, sizeof(Uint32), 1, fp); // map.getHeight()
-		this->tiles = (Sint32 *)malloc(sizeof(Sint32)*this->width*this->height*MAPLAYERS);
-		fread(this->tiles, sizeof(Sint32), this->width*this->height*MAPLAYERS, fp);
+
+		Sint32 *filetiles;
+		filetiles = (Sint32 *)malloc(sizeof(Sint32)*this->width*this->height*MAPLAYERS);
+		fread(filetiles, sizeof(Sint32), this->width*this->height*MAPLAYERS, fp);
+		
+		// Now put that ugly mess of tile data into a nice clean 3d vector array
+		for (int z = 0; z<MAPLAYERS; z++) 
+			for (int y = 0; y<this->height; y++) 
+				for (int x = 0; x<this->width; x++) 
+					this->tiles[x][y][z] = filetiles[z + y*MAPLAYERS + x*MAPLAYERS*this->height];
+
+		free(filetiles);
+
 		fread(&numentities, sizeof(Uint32), 1, fp); // number of entities on the map
 		for (c = 0; c<numentities; c++) {
 			fread(&sprite, sizeof(Sint32), 1, fp);
@@ -186,9 +201,9 @@ void Map::addEntity(Entity * entity) {
 
 Entity *Map::getEntityAt(int index) {
 	if (this->entities.size >= index) {
-		list<Entity *> iterator = this->entities.begin();
-		advance(iterator, index+1);
-		return *iterator;
+		list<Entity *>::iterator it = this->entities.begin();
+		advance(it, index+1);
+		return *it;
 	}
 	else {
 		return NULL;

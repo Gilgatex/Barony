@@ -168,7 +168,7 @@ int generateDungeon(string levelset, Uint32 seed) {
 	Sint32 x0, y0, x1, y1;
 	Door *door, *newDoor;
 	//bool *possiblelocations, *possiblelocations2, *possiblerooms;
-	bool *firstroomtile;
+	//bool *firstroomtile;
 	Sint32 numpossiblelocations, pickedlocation;
 	Entity *entity, *entity2, *childEntity;
 	Uint32 levellimit;
@@ -268,7 +268,6 @@ int generateDungeon(string levelset, Uint32 seed) {
 		// level is successfully loaded, add it to the pool
 		mapList.push_back(tempMap);
 
-		// The maps are currently a class, but its elements are not.  I'm not going to touch this yet.
 /*		newList = (list_t *) malloc(sizeof(list_t));
 		newList->first = NULL; newList->last = NULL;
 		
@@ -280,7 +279,7 @@ int generateDungeon(string levelset, Uint32 seed) {
 		for( y=0; y<tempMap->getHeight(); y++ ) {
 			for( x=0; x<tempMap->getWidth(); x++ ) {
 				if( x==0 || y==0 || x==tempMap->getWidth()-1 || y==tempMap->getHeight()-1 ) {
-					if( !tempMap->getTiles()[OBSTACLELAYER+y*MAPLAYERS+x*MAPLAYERS*tempMap->getHeight()] ) {
+					if( !tempMap->getTile(x,y,OBSTACLELAYER)) {
 						Sint32 dir = 0;
 						if( x==tempMap->getWidth()-1 )
 							dir=0;
@@ -307,6 +306,7 @@ int generateDungeon(string levelset, Uint32 seed) {
 	if( numlevels > 1 ) {
 		for( y=0; y<map.getHeight(); y++ ) {
 			for( x=0; x<map.getWidth(); x++ ) {
+				// Can't put a room next to an edge
 				if( x<2 || y<2 || x>map.getWidth()-3 || y>map.getHeight()-3 )
 					possiblelocations[x][y] = FALSE;
 				else
@@ -325,15 +325,10 @@ int generateDungeon(string levelset, Uint32 seed) {
 			// pick the room to be used
 			if( c==0 ) {
 				levelnum=0; // the first room *must* be an entrance hall
-				levelnum2=0;
 				numlevels--;
 				possiblerooms[0]=FALSE;
 				tempMap = mapList.front();
 				mapList.pop_front();
-/*				node = mapList.first;
-				node = ((list_t *)node->element)->first;
-				doorNode = node->next;
-				tempMap = (map_t *)node->element;*/
 			} else if( c==1 && secretlevelexit ) {
 				secretlevelmap = new Map;
 				string secretmapname;
@@ -357,46 +352,38 @@ int generateDungeon(string levelset, Uint32 seed) {
 					delete(secretlevelmap);
 					continue;
 				}
-				levelnum=0;
-				levelnum2=-1;
+				levelnum=-1;
 				tempMap = secretlevelmap;
 			} else if( c==2 && shoplevel ) {
 				// generate a shop
-				levelnum=0;
-				levelnum2=-1;
+				levelnum=-1;
 				tempMap = shopmap;
 			} else {
 				if( !numlevels ) {
 					break;
 				}
-				levelnum=prng_get_uint()%(numlevels); // draw randomly from the pool
-			
-				// traverse the map list to the picked level
-				tempMap = mapList.front();
-				i=0; j=-1;
-				while(1) {
-					if(possiblerooms[i]) {
-						j++;
-						if(j==levelnum)
-							break;
+				levelnum=prng_get_uint()%(mapList.size()-1); // draw randomly from the pool that is left
+				
+				int i = 0;
+				for (list<Map *>::iterator node = mapList.begin(); node != mapList.end(); ++node) {
+					if (i == levelnum) {
+						tempMap = *node;
+						break;
 					}
-					node=node->next;
 					i++;
 				}
-				levelnum2=i;
-				node = ((list_t *)node->element)->first;
-				doorNode = node->next;
-				tempMap = (map_t *)node->element;
+			
+				mapList.remove(tempMap);
 			}
 			
 			// find locations where the selected room can be added to the level
 			numpossiblelocations = map.getWidth()*map.getHeight();
 			for( y0=0; y0<map.getHeight(); y0++ ) {
 				for( x0=0; x0<map.getWidth(); x0++ ) {
-					for( y1=y0; y1<std::min(y0+tempMap->height+1,map.getHeight()); y1++ ) {
-						for( x1=x0; x1<std::min(x0+tempMap->width+1,map.getWidth()); x1++ ) {
-							if( possiblelocations[x1+y1*map.getWidth()]==FALSE && possiblelocations2[x0+y0*map.getWidth()]==TRUE ) {
-								possiblelocations2[x0+y0*map.getWidth()]=FALSE;
+					for( y1=y0; y1<std::min(y0+tempMap->getHeight()+1,map.getHeight()); y1++ ) {
+						for( x1=x0; x1<std::min(x0+tempMap->getWidth()+1,map.getWidth()); x1++ ) {
+							if( possiblelocations[x1][y1]==FALSE && possiblelocations2[x0][y0]==TRUE ) {
+								possiblelocations2[x0][y0]=FALSE;
 								numpossiblelocations--;
 							}
 						}
@@ -411,24 +398,17 @@ int generateDungeon(string levelset, Uint32 seed) {
 				numlevels--;
 				if( levelnum2==0 ) {
 					// if we couldn't even fit the entrance hall into the dungeon, we have a problem
-					free(possiblerooms);
-					free(possiblelocations);
-					free(possiblelocations2);
-					free(firstroomtile);
-					free(sublevelname);
-					free(fullname);
-					list_FreeAll(&mapList);
+					possiblerooms.clear();
+					possiblelocations.clear();
+					possiblelocations2.clear();
+					sublevelname = "";
+					fullname = "";
+					mapList.clear();
 					if( shoplevel && c==2 ) {
-						list_FreeAll(shopmap.entities);
-						free(shopmap.entities);
-						if( shopmap.getTiles() )
-							free(shopmap.getTiles());
+						delete(shopmap);
 					}
 					if( secretlevelexit && c==1 ) {
-						list_FreeAll(secretlevelmap.entities);
-						free(secretlevelmap.entities);
-						if( secretlevelmap.getTiles() )
-							free(secretlevelmap.getTiles());
+						delete(secretlevelmap);
 					}
 					printlog("error: entrance room must fit into dungeon!\n");
 					return -1;
@@ -443,7 +423,7 @@ int generateDungeon(string levelset, Uint32 seed) {
 			pickedlocation = prng_get_uint()%numpossiblelocations; i = -1;
 			x = 0; y = 0;
 			while( 1 ) {
-				if( possiblelocations2[x+y*map.getWidth()]==TRUE ) {
+				if( possiblelocations2[x][y]==TRUE ) {
 					i++;
 					if( i == pickedlocation )
 						break;
@@ -458,22 +438,25 @@ int generateDungeon(string levelset, Uint32 seed) {
 			}
 			
 			// now copy all the geometry from the sublevel to the chosen location
+			vector< vector<bool> > firstroomtile(map.getWidth(), vector<bool>(map.getHeight()));
 			if( c==0 )
-				for( z=0; z<map.getWidth()*map.getHeight(); z++ )
-					firstroomtile[z] = FALSE;
-			x1=x+tempMap->width; y1=y+tempMap->height;
+				for (y = 0; y<map.getHeight(); y++) 
+					for (x = 0; x<map.getWidth(); x++) 
+						firstroomtile[x][y] = FALSE;
+			x1=x+tempMap->getWidth(); y1=y+tempMap->getHeight();
 			for( z=0; z<MAPLAYERS; z++ ) {
 				for( y0=y; y0<y1; y0++ ) {
 					for( x0=x; x0<x1; x0++ ) {
-						map.getTiles()[z+y0*MAPLAYERS+x0*MAPLAYERS*map.getHeight()] = tempMap->tiles[z+(y0-y)*MAPLAYERS+(x0-x)*MAPLAYERS*tempMap->height];
+						//TODO use the new vector array here.
+						map.setTile(x0, y0, z, tempMap->getTile(x0 - x, y0 - y, z));
 						if( z==0 ) {
-							possiblelocations[x0+y0*map.getWidth()]=FALSE;
+							possiblelocations[x0][y0]=FALSE;
 							if( c==0 ) {
-								firstroomtile[y0+x0*map.getHeight()]=TRUE;
+								firstroomtile[x0][y0]=TRUE;
 							} else if( c==2 && shoplevel ) {
-								firstroomtile[y0+x0*map.getHeight()]=TRUE;
-								if( x0-x>0 && y0-y>0 && x0-x<tempMap->width-1 && y0-y<tempMap->height-1 )
-									shoparea[y0+x0*map.getHeight()]=TRUE;
+								firstroomtile[x0][y0]=TRUE;
+								if( x0-x>0 && y0-y>0 && x0-x<tempMap->getWidth()-1 && y0-y<tempMap->getHeight()-1 )
+									shoparea[x0][y0]=TRUE;
 							}
 						}
 						// remove any existing entities in this region too

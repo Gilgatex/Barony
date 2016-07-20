@@ -21,6 +21,8 @@
 #include <list>
 #include <sstream>
 #include <iomanip>
+#include <vector>
+#include <valarray>
 using namespace std; //For C++ strings and lists
 
 #ifdef _WIN32

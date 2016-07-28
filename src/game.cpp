@@ -1614,7 +1614,7 @@ int main(int argc, char **argv) {
 		initialized = TRUE;
 		
 		// initialize map
-		Map map;
+		//Map map;
 		
 		// instantiate a timer
 		timer = SDL_AddTimer(1000/TICKS_PER_SECOND, timerCallback, NULL);

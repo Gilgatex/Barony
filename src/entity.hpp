@@ -55,8 +55,7 @@ class Entity {
 	static const int SWITCH_UNPOWERED = 0;
 	static const int SWITCH_POWERED = 1;
 public:
-	Entity(Sint32 in_sprite, Uint32 pos);
-	Entity(Sint32 in_sprite, Uint32 pos, list_t *entlist);
+	Entity(Sint32 in_sprite, Uint32 pos, list_t *entlist = NULL);
 	~Entity();
 
 

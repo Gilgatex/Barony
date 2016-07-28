@@ -8,7 +8,7 @@
 	See LICENSE for details.
 
 -------------------------------------------------------------------------------*/
-
+#include "main.hpp";
 #pragma once
 
 // REMEMBER TO CHANGE THIS WITH EVERY NEW OFFICIAL VERSION!!!

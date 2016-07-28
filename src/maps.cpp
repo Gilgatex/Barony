@@ -191,7 +191,7 @@ int generateDungeon(string levelset, Uint32 seed) {
 	prng_seed_bytes(&mapseed,sizeof(mapseed));
 	
 	// determine whether shop level or not
-	if( prng_get_uint()%2 && currentlevel>1 && map.getName().find("Underworld") != string::npos && map.getName().find("Hell") != string::npos)
+	if( prng_get_uint()%2 && currentlevel>1 && map.getName().find("Underworld") == string::npos && map.getName().find("Hell") == string::npos)
 		shoplevel = TRUE;
 	
 	// determine whether minotaur level or not

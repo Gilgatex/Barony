@@ -33,7 +33,7 @@
 
 -------------------------------------------------------------------------------*/
 
-Entity::Entity(Sint32 in_sprite, Uint32 pos, list_t *entlist) :
+Entity::Entity(Sint32 in_sprite, Uint32 pos, list_t *entlist = NULL) :
 	char_gonnavomit(skill[26]),
 	char_heal(skill[22]),
 	char_energize(skill[23]),
@@ -49,14 +49,16 @@ Entity::Entity(Sint32 in_sprite, Uint32 pos, list_t *entlist) :
 	chest_opener(skill[5])
 {
 	int c;
-	// add the entity to the entity list
-	if(!pos)
-		mynode = list_AddNodeFirst(entlist);
-	else
-		mynode = list_AddNodeLast(entlist);
-	mynode->element = this;
-	mynode->deconstructor = &entityDeconstructor;
-	mynode->size = sizeof(Entity);
+	if (entlist) {
+		// add the entity to the entity list
+		if (!pos)
+			mynode = list_AddNodeFirst(entlist);
+		else
+			mynode = list_AddNodeLast(entlist);
+		mynode->element = this;
+		mynode->deconstructor = &entityDeconstructor;
+		mynode->size = sizeof(Entity);
+	}
 
 	// now reset all of my data elements
 	lastupdate=0;
@@ -98,14 +100,7 @@ Entity::Entity(Sint32 in_sprite, Uint32 pos, list_t *entlist) :
 	skill[2]=-1;
 	for( c=0; c<16; c++ )
 		flags[c]=FALSE;
-	if( entlist==map.entities ) {
-		if( multiplayer!=CLIENT || loading ) {
-			uid=entity_uids;
-			entity_uids++;
-		} else {
-			uid = -2;
-		}
-	} else {
+	if (entlist) {
 		uid = -2;
 	}
 	behavior=NULL;
